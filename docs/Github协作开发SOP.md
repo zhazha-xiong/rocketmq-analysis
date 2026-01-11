@@ -171,7 +171,7 @@ git push
 
 1. **当评审者认为代码没有问题后**，会点击 `Approve（批准）`。
 2. **组长确认 PR 已被批准**，且所有自动化检查（如有）都已通过。
-3. **组长点击 `Create a merge commit`（Merge commit）按钮**，确认合并信息，完成合并。
+3. **组长点击 `Create a merge commit`（Merge Pull Request）按钮**，确认合并信息，完成合并。
 4. 合并后，建议点击 `Delete branch` 删除远程特性分支，保持仓库整洁（代码已进入 `main`，删除分支不会丢失变更）。
 
 合并后（本地同步 + 删除本地分支，可选）：
