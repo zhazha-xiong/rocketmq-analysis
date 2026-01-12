@@ -18,7 +18,11 @@ def scan_python_files(repo_paths):
     files_data = []
     
     for repo_path in repo_paths:
-        repo_name = os.path.basename(repo_path)
+        # 获取仓库名称：如果是子目录，保留父目录/子目录格式
+        if 'rocketmq-clients' in repo_path and repo_path.endswith('python'):
+            repo_name = "rocketmq-clients/python"
+        else:
+            repo_name = os.path.basename(repo_path)
         print(f"扫描仓库: {repo_name}")
         
         for root, dirs, files in os.walk(repo_path):
