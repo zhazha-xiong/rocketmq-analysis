@@ -17,7 +17,11 @@ def run_bandit_scan(repo_paths, output_file):
     all_results = []
     
     for repo_path in repo_paths:
-        repo_name = os.path.basename(repo_path)
+        # 获取仓库名称：如果是子目录，保留父目录/子目录格式
+        if 'rocketmq-clients' in repo_path and repo_path.endswith('python'):
+            repo_name = "rocketmq-clients/python"
+        else:
+            repo_name = os.path.basename(repo_path)
         print(f"\n正在扫描: {repo_name}")
         print("=" * 50)
         
