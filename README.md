@@ -18,21 +18,8 @@ pip install -r requirements.txt
 
 ## 运行
 
-### 模块B：研发效能与工作节律
+首先需要[获取Github令牌](https://github.com/settings/tokens)
+然后将令牌填入`.env`中：`GITHUB_TOKEN=<GITHUB_TOKEN>`
 
-```bat
-python -m scripts.module_b
-```
-
-#### 产物输出位置
-
-- 数据：`data/module_b/<repo_name>/...`
-- 图表：`figures/module_b/<repo_name>/...`
-
-#### 运行测试
-
-```bat
-.venv\Scripts\activate
-pytest -q
-```
+[参考文档](https://docs.github.com/zh/rest/commits/commits?apiVersion=2022-11-28)
 
