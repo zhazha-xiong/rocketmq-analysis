@@ -23,6 +23,8 @@ def main() -> None:
 
     page = 1
     total = 0
+    # 过滤机器人提交
+    bot_keywords = ("bot", "action", "gitter")
     while True:
         r = requests.get(
             f"https://api.github.com/repos/{owner}/{repo}/commits",
@@ -39,13 +41,24 @@ def main() -> None:
             sha = c.get("sha")
             parents = c.get("parents", [])
             is_merge = len(parents) > 1
+            if is_merge:
+                continue
+
             author = (c.get("commit", {}).get("author") or {})
             authored_utc = author.get("date")
             author_name = author.get("name")
+            author_email = author.get("email")
+
+            author_text = f"{author_name or ''} {author_email or ''}".lower()
+            if any(k in author_text for k in bot_keywords):
+                continue
+
             msg = c.get("commit", {}).get("message", "")
             subject = msg.splitlines()[0] if msg else ""
 
-            print(f"{authored_utc}\t{sha}\tmerge={int(is_merge)}\t{author_name}\t{subject}")
+            print(
+                f"{authored_utc}\t{sha}\t{author_name}\t{author_email}\t{subject}"
+            )
             total += 1
 
         page += 1
