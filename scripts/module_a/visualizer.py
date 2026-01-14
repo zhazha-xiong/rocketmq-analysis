@@ -7,15 +7,13 @@ import seaborn as sns
 import os
 import warnings
 from matplotlib.font_manager import FontProperties, findfont, FontManager
-# 配置中文字体支持
+
 import matplotlib
 matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'KaiTi', 'SimSun']
 matplotlib.rcParams['axes.unicode_minus'] = False
-# 过滤字体缺失警告
-warnings.filterwarnings('ignore', category=UserWarning, message='.*Glyph.*missing.*')
-print("[OK] 字体配置完成")
 
-# 设置绘图风格
+warnings.filterwarnings('ignore', category=UserWarning, message='.*Glyph.*missing.*')
+
 sns.set_style("whitegrid")
 sns.set_palette("husl")
 
@@ -28,7 +26,6 @@ def plot_bandit_severity(df_bandit, output_dir):
     ax1.pie(severity_counts.values, labels=severity_counts.index, autopct='%1.1f%%', startangle=90)
     ax1.set_title('Security Issue Severity Distribution', fontsize=14, fontweight='bold')
     
-    # Confidence distribution
     confidence_counts = df_bandit['confidence'].value_counts()
     ax2.pie(confidence_counts.values, labels=confidence_counts.index, autopct='%1.1f%%', startangle=90)
     ax2.set_title('Security Issue Confidence Distribution', fontsize=14, fontweight='bold')
@@ -50,7 +47,6 @@ def plot_bandit_issues(df_bandit, output_dir):
     ax.set_title('Top 10 Security Issue Types', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     
-    # Add value labels on bars
     for i, v in enumerate(issue_counts.values):
         ax.text(v + 0.5, i, str(v), va='center')
     
@@ -63,28 +59,24 @@ def plot_complexity_distribution(df_lizard, output_dir):
     """Plot code complexity distribution"""
     fig, axes = plt.subplots(2, 2, figsize=(14, 12))
     
-    # Cyclomatic complexity distribution (boxplot)
     sns.boxplot(data=df_lizard, y='ccn', ax=axes[0, 0])
     axes[0, 0].axhline(y=15, color='r', linestyle='--', label='Threshold=15')
     axes[0, 0].set_ylabel('Cyclomatic Complexity (CCN)', fontsize=12)
     axes[0, 0].set_title('CCN Distribution', fontsize=13, fontweight='bold')
     axes[0, 0].legend()
     
-    # Function lines distribution (boxplot)
     sns.boxplot(data=df_lizard, y='nloc', ax=axes[0, 1])
     axes[0, 1].axhline(y=80, color='r', linestyle='--', label='Threshold=80')
     axes[0, 1].set_ylabel('Lines of Code (NLOC)', fontsize=12)
     axes[0, 1].set_title('Function Lines Distribution', fontsize=13, fontweight='bold')
     axes[0, 1].legend()
     
-    # Parameter count distribution (boxplot)
     sns.boxplot(data=df_lizard, y='param', ax=axes[1, 0])
     axes[1, 0].axhline(y=5, color='r', linestyle='--', label='Threshold=5')
     axes[1, 0].set_ylabel('Parameter Count', fontsize=12)
     axes[1, 0].set_title('Function Parameters Distribution', fontsize=13, fontweight='bold')
     axes[1, 0].legend()
     
-    # Problem function statistics (bar chart)
     problem_counts = pd.Series({
         'High Complexity\n(CCN>15)': df_lizard['high_complexity'].sum(),
         'Too Long\n(NLOC>80)': df_lizard['too_long'].sum(),
@@ -95,7 +87,6 @@ def plot_complexity_distribution(df_lizard, output_dir):
     axes[1, 1].set_title('Problem Function Statistics', fontsize=13, fontweight='bold')
     axes[1, 1].set_xticklabels(axes[1, 1].get_xticklabels(), rotation=0)
     
-    # Add value labels on bars
     for i, v in enumerate(problem_counts.values):
         axes[1, 1].text(i, v + 0.5, str(v), ha='center', va='bottom', fontweight='bold')
     
@@ -110,7 +101,6 @@ def plot_top_complex_functions(df_lizard, output_dir, top_n=10):
     
     top_complex = df_lizard.nlargest(top_n, 'ccn')
     
-    # 创建函数标签
     labels = [f"{row['repository'][:15]}...\n{row['function'][:30]}..." 
               if len(row['function']) > 30 
               else f"{row['repository'][:15]}...\n{row['function']}"
@@ -124,7 +114,6 @@ def plot_top_complex_functions(df_lizard, output_dir, top_n=10):
     ax.set_xlabel('Cyclomatic Complexity (CCN)', fontsize=12)
     ax.set_title(f'Top {top_n} Most Complex Functions', fontsize=14, fontweight='bold')
     
-    # Add value labels on bars
     for i, v in enumerate(top_complex['ccn'].values):
         ax.text(v + 0.5, i, str(v), va='center')
     
@@ -137,29 +126,25 @@ def plot_repository_comparison(df_bandit, df_lizard, output_dir):
     """Compare code quality between two repositories"""
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
     
-    # Compare security issue count
     bandit_by_repo = df_bandit['repository'].value_counts()
     bandit_by_repo.plot(kind='bar', ax=axes[0], color=['#3498db', '#e74c3c'])
     axes[0].set_ylabel('Security Issue Count', fontsize=12)
     axes[0].set_title('Security Issues by Repository', fontsize=13, fontweight='bold')
     axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=0)
     
-    # Add value labels on bars
     max_value = bandit_by_repo.max()
-    axes[0].set_ylim(0, max_value * 1.15)  # 增加15%的空间
+    axes[0].set_ylim(0, max_value * 1.15)
     for i, v in enumerate(bandit_by_repo.values):
         axes[0].text(i, v + 0.5, str(v), ha='center', va='bottom', fontweight='bold')
     
-    # Compare average complexity
     lizard_by_repo = df_lizard.groupby('repository')['ccn'].mean()
     lizard_by_repo.plot(kind='bar', ax=axes[1], color=['#2ecc71', '#f39c12'])
     axes[1].set_ylabel('Average CCN', fontsize=12)
     axes[1].set_title('Average Complexity by Repository', fontsize=13, fontweight='bold')
     axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=0)
-    
-    # Add value labels on bars
+
     max_value = lizard_by_repo.max()
-    axes[1].set_ylim(0, max_value * 1.15)  # 增加15%的空间
+    axes[1].set_ylim(0, max_value * 1.15)
     for i, v in enumerate(lizard_by_repo.values):
         axes[1].text(i, v + 0.2, f'{v:.2f}', ha='center', va='bottom', fontweight='bold')
     
@@ -169,19 +154,16 @@ def plot_repository_comparison(df_bandit, df_lizard, output_dir):
     plt.close()
 
 if __name__ == "__main__":
-    # Load data
     print("Loading data...")
     df_bandit = pd.read_csv("data/module_a/bandit_results.csv", encoding='utf-8-sig')
     df_lizard = pd.read_csv("data/module_a/lizard_results.csv", encoding='utf-8-sig')
     
-    # Create output directory
     output_dir = "figures/module_a"
     os.makedirs(output_dir, exist_ok=True)
     
     print("\nGenerating charts...")
     print("=" * 50)
     
-    # Generate all charts
     plot_bandit_severity(df_bandit, output_dir)
     plot_bandit_issues(df_bandit, output_dir)
     plot_complexity_distribution(df_lizard, output_dir)
