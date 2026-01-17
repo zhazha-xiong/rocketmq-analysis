@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-import csv
+from chinese_calendar import is_holiday
 
 def main() -> None:
     # 1.获取csv
@@ -21,8 +21,25 @@ def main() -> None:
     
     daily_counts = df["date"].value_counts().sort_index()
 
-    print("=== 每日提交统计 ===")
-    print(daily_counts)
+    # 3. 筛选出中国法定节假日提交
+    print("\n=== 法定节假日/周末提交统计 ===")
+    holiday_commits = 0
+    holiday_days = []
+    
+    for date, count in daily_counts.items():
+        if is_holiday(date):
+            holiday_commits += count
+            holiday_days.append(f"{date} ({count})")
+
+    # 打印法定节假日提交数
+    print(f"节假日提交总数: {holiday_commits}")
+    print(f"节假日提交占比: {holiday_commits / daily_counts.sum():.2%}")
+    if holiday_days:
+        print("\n节假日提交详情 (前10条):")
+        for d in holiday_days[:10]:
+            print(d)
+        if len(holiday_days) > 10:
+            print(f"... 以及其他 {len(holiday_days) - 10} 天")
 
 
 if __name__ == "__main__":
