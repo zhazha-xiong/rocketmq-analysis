@@ -65,7 +65,7 @@ def main() -> None:
 
             page += 1
 
-    print(f"\n总记录数: {total}")
+    print(f"[OK] 总记录数: {total}")
 
 
 if __name__ == "__main__":
