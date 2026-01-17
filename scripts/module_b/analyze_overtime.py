@@ -4,25 +4,20 @@ import matplotlib.pyplot as plt
 from chinese_calendar import is_holiday
 
 def main() -> None:
-    # 1.获取csv
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     csv_path = os.path.join(repo_root, "data", "module_b", "clean_commits.csv")
 
-    if not csv_path:
-        raise RuntimeError("data/module_b/clean_commits.csv不存在")
+    if not os.path.exists(csv_path):
+        raise RuntimeError(f"数据文件不存在: {csv_path}")
 
     cols = ["time", "name"]
-   
     df = pd.read_csv(csv_path, usecols=cols)
 
-    # 2. 按天聚合
+    # 预处理：聚合每日提交量
     df["time"] = pd.to_datetime(df["time"])
-    
     df["date"] = df["time"].dt.date
-    
     daily_counts = df["date"].value_counts().sort_index()
 
-    # 3. 筛选出中国法定节假日提交
     print("\n=== 法定节假日/周末提交统计 ===")
     holiday_commits = 0
     holiday_days = []
@@ -32,7 +27,7 @@ def main() -> None:
             holiday_commits += count
             holiday_days.append(f"{date} ({count})")
 
-    # 打印法定节假日提交数
+    # 输出统计报告
     print(f"节假日提交总数: {holiday_commits}")
     print(f"节假日提交占比: {holiday_commits / daily_counts.sum():.2%}")
     if holiday_days:
@@ -64,13 +59,49 @@ def main() -> None:
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    # 确保输出目录存在
     results_dir = os.path.join(repo_root, "figures", "module_b")
     os.makedirs(results_dir, exist_ok=True)
     
     output_path = os.path.join(results_dir, "overtime_analysis.png")
     plt.savefig(output_path)
     print(f"图表已保存至: {output_path}")
+
+    # 可视化：节假日加班比例分析
+    
+    min_date = df["date"].min()
+    max_date = df["date"].max()
+    all_dates = pd.date_range(start=min_date, end=max_date).date
+    
+    holidays_worked = 0
+    holidays_rested = 0
+    worked_dates = set(daily_counts.index)
+    
+    for date in all_dates:
+        if is_holiday(date):
+            if date in worked_dates:
+                holidays_worked += 1
+            else:
+                holidays_rested += 1
+                
+    # 绘制饼图
+    plt.figure(figsize=(10, 8))
+    labels = [f'加班节假日 ({holidays_worked}天)', f'休息节假日 ({holidays_rested}天)']
+    sizes = [holidays_worked, holidays_rested]
+
+    colors = ['#ff9999', '#99ff99'] 
+    explode = (0.1, 0) if holidays_worked > 0 else (0, 0) # 突出显示加班部分
+    
+    wedges, texts, autotexts = plt.pie(sizes, explode=explode, labels=None, colors=colors, autopct='%1.1f%%',
+            shadow=True, startangle=140)
+            
+    plt.legend(wedges, labels, title ="统计详情", loc="center left", bbox_to_anchor=(0.85, 0.5))
+
+            
+    plt.title(f'节假日加班比例分析\n({min_date} ~ {max_date})')
+    
+    pie_path = os.path.join(results_dir, "overtime_pie_chart.png")
+    plt.savefig(pie_path)
+    print(f"饼图已保存至: {pie_path}")
 
 if __name__ == "__main__":
     main()
