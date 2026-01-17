@@ -21,5 +21,5 @@ pip install -r requirements.txt
 首先需要[获取Github令牌](https://github.com/settings/tokens)
 然后将令牌填入`.env`中：`GITHUB_TOKEN=<GITHUB_TOKEN>`
 
-[参考文档](https://docs.github.com/zh/rest/commits/commits?apiVersion=2022-11-28)
+[Github API参考文档](https://docs.github.com/zh/rest/commits/commits?apiVersion=2022-11-28)
 

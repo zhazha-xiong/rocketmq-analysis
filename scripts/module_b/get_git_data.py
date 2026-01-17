@@ -24,8 +24,6 @@ def main() -> None:
 
     page = 1
     total = 0
-    # 过滤机器人提交
-    bot_keywords = ("bot", "action", "gitter")
 
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     out_path = os.path.join(repo_root, "data", "module_b", "commits.csv")
@@ -59,22 +57,15 @@ def main() -> None:
                 author_name = author.get("name")
                 author_email = author.get("email")
 
-                author_text = f"{author_name or ''} {author_email or ''}".lower()
-                if any(k in author_text for k in bot_keywords):
-                    continue
-
                 msg = c.get("commit", {}).get("message", "")
                 subject = msg.splitlines()[0] if msg else ""
 
-                print(
-                    f"{authored_utc}\t{sha}\t{author_name}\t{author_email}\t{subject}"
-                )
                 writer.writerow([authored_utc, sha, author_name, author_email, subject])
                 total += 1
 
             page += 1
 
-    print(f"\n[OK] printed commits: {total}")
+    print(f"\n总记录数: {total}")
 
 
 if __name__ == "__main__":
