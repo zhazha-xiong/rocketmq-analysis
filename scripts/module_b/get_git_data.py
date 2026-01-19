@@ -13,8 +13,8 @@ def main() -> None:
         raise RuntimeError("请在scripts/module_b/.env填写GITHUB_TOKEN")
 
     owner, repo = "apache", "rocketmq"
-    since = "2024-01-01T00:00:00Z"
-    until = "2026-01-01T00:00:00Z"
+    since = "2013-03-15T00:00:00Z"
+    until = "2026-01-15T00:00:00Z"
 
     headers = {
         "Accept": "application/vnd.github+json",
