@@ -91,7 +91,7 @@ def main() -> None:
     colors = ['#ff9999', '#99ff99'] 
     explode = (0.1, 0)  # 突出显示加班部分
     
-    wedges, texts, autotexts = plt.pie(sizes, explode=explode, labels=None, colors=colors, autopct='%1.1f%%',
+    wedges = plt.pie(sizes, explode=explode, labels=None, colors=colors, autopct='%1.1f%%',
             shadow=True, startangle=140)
             
     plt.legend(wedges, labels, title="统计详情", loc="center left", bbox_to_anchor=(0.85, 0.5))
