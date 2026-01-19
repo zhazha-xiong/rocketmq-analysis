@@ -8,9 +8,9 @@ def main() -> None:
     csv_path = os.path.join(repo_root, "data", "module_b", "clean_commits.csv")
 
     if not os.path.exists(csv_path):
-        raise RuntimeError(f"数据文件不存在: {csv_path}")
+        raise RuntimeError(f"CSV 文件不存在: {csv_path}")
 
-    cols = ["time", "name"]
+    cols = ["time"]
     df = pd.read_csv(csv_path, usecols=cols)
 
     # 预处理：聚合每日提交量
@@ -46,7 +46,7 @@ def main() -> None:
     colors = ['red' if is_holiday(d) else 'skyblue' for d in dates]
     
     plt.figure(figsize=(15, 8))
-    bars = plt.bar(dates, counts, color=colors)
+    plt.bar(dates, counts, color=colors)
     
     from matplotlib.lines import Line2D
     custom_lines = [Line2D([0], [0], color='red', lw=4),
@@ -89,12 +89,12 @@ def main() -> None:
     sizes = [holidays_worked, holidays_rested]
 
     colors = ['#ff9999', '#99ff99'] 
-    explode = (0.1, 0) if holidays_worked > 0 else (0, 0) # 突出显示加班部分
+    explode = (0.1, 0)  # 突出显示加班部分
     
     wedges, texts, autotexts = plt.pie(sizes, explode=explode, labels=None, colors=colors, autopct='%1.1f%%',
             shadow=True, startangle=140)
             
-    plt.legend(wedges, labels, title ="统计详情", loc="center left", bbox_to_anchor=(0.85, 0.5))
+    plt.legend(wedges, labels, title="统计详情", loc="center left", bbox_to_anchor=(0.85, 0.5))
 
             
     plt.title(f'节假日加班比例分析\n({min_date} ~ {max_date})')
