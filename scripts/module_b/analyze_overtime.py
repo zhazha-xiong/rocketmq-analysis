@@ -67,7 +67,7 @@ def main() -> None:
     plt.savefig(output_path)
     print(f"图表已保存至: {output_path}")
 
-    # 可视化：节假日加班比例分析
+    # 节假日加班比例分析
     
     min_date = df["date"].min()
     max_date = df["date"].max()
