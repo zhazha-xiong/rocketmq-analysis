@@ -5,3 +5,4 @@ bandit>=1.7.8
 lizard>=1.17.10
 chinesecalendar>=1.11.0
 matplotlib>=3.8.0
+seaborn>=0.13.0
