@@ -2,6 +2,7 @@ import os
 import csv
 
 import requests
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 
@@ -14,7 +15,8 @@ def main() -> None:
 
     owner, repo = "apache", "rocketmq"
     since = "2013-03-15T00:00:00Z"
-    until = "2026-01-15T00:00:00Z"
+    
+    until = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     headers = {
         "Accept": "application/vnd.github+json",
@@ -28,6 +30,8 @@ def main() -> None:
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     out_path = os.path.join(repo_root, "data", "module_b", "commits.csv")
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+    print("===开始采集数据===")
 
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
