@@ -18,8 +18,20 @@ pip install -r requirements.txt
 
 ## 运行
 
-首先需要[获取Github令牌](https://github.com/settings/tokens)
-然后将令牌填入`.env`中：`GITHUB_TOKEN=<GITHUB_TOKEN>`
+### 模块B
 
-[Github API参考文档](https://docs.github.com/zh/rest/commits/commits?apiVersion=2022-11-28)
+1. **配置 Token**  
+   首先需要[获取Github令牌](https://github.com/settings/tokens)（Classic Token，勾选 `repo` 权限即可）。  
+   将 `scripts/module_b/.env.example` 复制为 `scripts/module_b/.env`，并将令牌填入：
+   ```ini
+   GITHUB_TOKEN=your_token_here
+   ```
+
+2. **一键运行**  
+   该命令会自动执行：数据采集 -> 数据清洗 -> 图表生成。
+   ```bat
+   python scripts/module_b/main.py
+   ```
+   
+   输出结果位于 `data/module_b/` 和 `figures/module_b/`。
 
