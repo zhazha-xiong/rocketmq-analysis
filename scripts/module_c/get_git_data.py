@@ -73,6 +73,17 @@ def main() -> None:
 
     with open(os.path.join(out_dir, "workflow_runs.json"), "w", encoding="utf-8") as f:
         json.dump(runs, f, ensure_ascii=False, indent=2)
+    
+    # 5. Releases
+    url_releases = f"https://api.github.com/repos/{owner}/{repo}/releases"
+    params_releases = {"per_page": 20, "page": 1}
+    print(f"Fetch: {url_releases}")
+    r_releases = requests.get(url_releases, headers=headers, params=params_releases, timeout=30)
+    r_releases.raise_for_status()
+    releases = r_releases.json()
+
+    with open(os.path.join(out_dir, "releases.json"), "w", encoding="utf-8") as f:
+        json.dump(releases, f, ensure_ascii=False, indent=2)
 
     print("[OK] 数据采集完成")
 
