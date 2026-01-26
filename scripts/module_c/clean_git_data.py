@@ -33,17 +33,20 @@ def main() -> None:
     # --- 维度 1: 版本控制 (25分) ---
     # 1.1 Commit 规范性检查 (15分)
     valid_commits = 0
-    pattern = re.compile(r"^(feat|fix|docs|style|refactor|test|chore|perf|build|ci|revert)(\(.+\))?:", re.IGNORECASE)
+    pattern = re.compile(r"^((feat|fix|docs|style|refactor|test|chore|perf|build|ci|revert)(\(.+\))?:|\[ISSUE #\d+\])", re.IGNORECASE)
     for c in commits:
-        msg = c.get("commit", {}).get("message", "").splitlines()[0]
+        msg = c.get("commit", {}).get("message", "").splitlines()[0].strip()
         if pattern.match(msg):
             valid_commits += 1
     score_vc_commit = (valid_commits / len(commits)) * 15 if commits else 0
 
     # 1.2 PR 流程规范性检查 (10分)
+    # 规则优化: 包含详细描述(Body) 或 有元数据(Assignee/Reviewers/Labels) 均视为规范
     valid_prs = 0
     for pr in prs:
-        if pr.get("assignee") or pr.get("requested_reviewers") or pr.get("labels"):
+        has_body = pr.get("body") and len(pr.get("body", "").strip()) > 10
+        has_meta = pr.get("assignee") or pr.get("requested_reviewers") or pr.get("labels")
+        if has_body or has_meta:
             valid_prs += 1
     score_vc_pr = (valid_prs / len(prs)) * 10 if prs else 0
     
