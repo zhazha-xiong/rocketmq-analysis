@@ -112,25 +112,25 @@ def main() -> None:
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     
-    print(f"[INFO] 评分结果: {final_data['total_score']} / 100")
+    print(f"[INFO] 评分结果: {final_data['total_score']:.2f} / 100")
     
-    print("-" * 40)
-    print(f"1. 版本控制: {final_data['version_control']['total']:>5} / 25")
-    print(f"   - Commit规范: {final_data['version_control']['commit_norm']:>5} / 15")
-    print(f"   - PR流程:     {final_data['version_control']['pr_process']:>5} / 10")
+    print("-" * 45)
+    print(f"1. 版本控制:     {final_data['version_control']['total']:>6.2f} / 25")
+    print(f"   - Commit规范: {final_data['version_control']['commit_norm']:>6.2f} / 15")
+    print(f"   - PR流程:     {final_data['version_control']['pr_process']:>6.2f} / 10")
     
-    print(f"2. 持续集成: {final_data['ci_health']['total']:>5} / 20")
-    print(f"   - 运行成功率: {final_data['ci_health']['run_rate']:>5} / 15")
-    print(f"   - CI配置:     {final_data['ci_health']['config_exist']:>5} / 5")
+    print(f"2. 持续集成:     {final_data['ci_health']['total']:>6.2f} / 20")
+    print(f"   - 运行成功率: {final_data['ci_health']['run_rate']:>6.2f} / 15")
+    print(f"   - CI配置:     {final_data['ci_health']['config_exist']:>6.2f} /  5")
     
-    print(f"3. 社区治理: {final_data['governance']['total']:>5} / 30")
-    print(f"   - 关键文档:   {final_data['governance']['docs']:>5} / 15")
-    print(f"   - 发布周期:   {final_data['governance']['release_cycle']:>5} / 15")
+    print(f"3. 社区治理:     {final_data['governance']['total']:>6.2f} / 30")
+    print(f"   - 关键文档:   {final_data['governance']['docs']:>6.2f} / 15")
+    print(f"   - 发布周期:   {final_data['governance']['release_cycle']:>6.2f} / 15")
     
-    print(f"4. 代码质量: {final_data['code_quality']['total']:>5} / 25")
-    print(f"   - 测试配置:   {final_data['code_quality']['test_config']:>5} / 10")
-    print(f"   - 代码规范:   {final_data['code_quality']['style_config']:>5} / 15")
-    print("-" * 40)
+    print(f"4. 代码质量:     {final_data['code_quality']['total']:>6.2f} / 25")
+    print(f"   - 测试配置:   {final_data['code_quality']['test_config']:>6.2f} / 10")
+    print(f"   - 代码规范:   {final_data['code_quality']['style_config']:>6.2f} / 15")
+    print("-" * 45)
 
     out_path = os.path.join(data_dir, "clean_scores.json")
     with open(out_path, "w", encoding="utf-8") as f:
