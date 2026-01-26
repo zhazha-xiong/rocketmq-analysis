@@ -102,6 +102,21 @@ def main() -> None:
         r_file = requests.get(url_file, headers=headers, timeout=10)
         file_status[fpath] = (r_file.status_code == 200)
         print(f"  - {fpath}: {file_status[fpath]}")
+        
+        # 深度检查: 如果是 pom.xml，检查内容是否包含 Checkstyle/Spotless 插件
+        if fpath == "pom.xml" and file_status[fpath]:
+            try:
+                content_b64 = r_file.json().get("content", "")
+                import base64
+                if content_b64:
+                    content_str = base64.b64decode(content_b64).decode("utf-8", errors="ignore")
+                    has_checkstyle = "maven-checkstyle-plugin" in content_str
+                    has_spotless = "spotless-maven-plugin" in content_str
+                    file_status["pom_style_check"] = has_checkstyle or has_spotless
+                    print(f"    > Checkstyle/Spotless configured: {file_status['pom_style_check']}")
+            except Exception as e:
+                print(f"    > Failed to parse pom.xml: {e}")
+                file_status["pom_style_check"] = False
 
     with open(os.path.join(out_dir, "files_structure.json"), "w", encoding="utf-8") as f:
         json.dump(file_status, f, ensure_ascii=False, indent=2)
