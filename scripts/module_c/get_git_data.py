@@ -103,7 +103,6 @@ def main() -> None:
         file_status[fpath] = (r_file.status_code == 200)
         print(f"  - {fpath}: {file_status[fpath]}")
         
-        # 深度检查: 如果是 pom.xml，检查内容是否包含 Checkstyle/Spotless 插件
         if fpath == "pom.xml" and file_status[fpath]:
             try:
                 content_b64 = r_file.json().get("content", "")
