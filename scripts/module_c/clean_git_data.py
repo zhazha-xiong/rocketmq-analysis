@@ -41,7 +41,6 @@ def main() -> None:
     score_vc_commit = (valid_commits / len(commits)) * 15 if commits else 0
 
     # 1.2 PR 流程规范性检查 (10分)
-    # 规则优化: 包含详细描述(Body) 或 有元数据(Assignee/Reviewers/Labels) 均视为规范
     valid_prs = 0
     for pr in prs:
         has_body = pr.get("body") and len(pr.get("body", "").strip()) > 10
@@ -53,9 +52,14 @@ def main() -> None:
     score_version_control = score_vc_commit + score_vc_pr
 
     # --- 维度 2: 持续集成 (20分) ---
-    # 2.1 Workflow 运行成功率 (15分)
-    success_runs = sum(1 for r in runs if r.get("conclusion") == "success")
-    score_ci_health = (success_runs / len(runs)) * 15 if runs else 0
+    # 2.1 Workflow 运行健康度 (15分)
+    effective_runs = [r for r in runs if r.get("conclusion") not in ["cancelled", "skipped", "neutral"]]
+    success_runs = sum(1 for r in effective_runs if r.get("conclusion") == "success")
+    
+    if effective_runs:
+        score_ci_health = (success_runs / len(effective_runs)) * 15
+    else:
+        score_ci_health = 0
     
     # 2.2 CI 配置检查 (5分)
     score_ci_config = 5 if files_status.get(".github/workflows") else 0
@@ -85,7 +89,12 @@ def main() -> None:
     # 4.1 测试配置检查 (10分)
     score_cq_test = 10 if files_status.get("pom.xml") else 0 
     # 4.2 代码规范配置检查 (15分)
-    score_cq_style = 15 if files_status.get(".editorconfig") else 0
+    if files_status.get(".editorconfig"):
+        score_cq_style = 15
+    elif files_status.get("pom.xml"):
+        score_cq_style = 15
+    else:
+        score_cq_style = 0
     
     score_quality = score_cq_test + score_cq_style
 
@@ -99,7 +108,8 @@ def main() -> None:
         "ci_health": {
             "total": round(score_ci, 2),
             "run_rate": round(score_ci_health, 2), 
-            "config_exist": score_ci_config
+            "config_exist": score_ci_config,
+            "stats": f"{success_runs}/{len(effective_runs)}"
         },
         "governance": {
             "total": round(score_governance, 2),
@@ -123,7 +133,7 @@ def main() -> None:
     print(f"   - PR流程:     {final_data['version_control']['pr_process']:>6.2f} / 10")
     
     print(f"2. 持续集成:     {final_data['ci_health']['total']:>6.2f} / 20")
-    print(f"   - 运行成功率: {final_data['ci_health']['run_rate']:>6.2f} / 15")
+    print(f"   - 运行成功率: {final_data['ci_health']['run_rate']:>6.2f} / 15 (Success: {final_data['ci_health']['stats']})")
     print(f"   - CI配置:     {final_data['ci_health']['config_exist']:>6.2f} /  5")
     
     print(f"3. 社区治理:     {final_data['governance']['total']:>6.2f} / 30")
