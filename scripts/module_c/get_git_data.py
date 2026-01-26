@@ -85,6 +85,41 @@ def main() -> None:
     with open(os.path.join(out_dir, "releases.json"), "w", encoding="utf-8") as f:
         json.dump(releases, f, ensure_ascii=False, indent=2)
 
+    # 6. Check Critical Files
+    files_to_check = [
+        "LICENSE", 
+        "README.md", 
+        "CONTRIBUTING.md", 
+        "CODE_OF_CONDUCT.md", 
+        "pom.xml", 
+        ".editorconfig",
+        ".github/workflows"
+    ]
+    file_status = {}
+    print("Checking files...")
+    for fpath in files_to_check:
+        url_file = f"https://api.github.com/repos/{owner}/{repo}/contents/{fpath}"
+        r_file = requests.get(url_file, headers=headers, timeout=10)
+        file_status[fpath] = (r_file.status_code == 200)
+        print(f"  - {fpath}: {file_status[fpath]}")
+        
+        if fpath == "pom.xml" and file_status[fpath]:
+            try:
+                content_b64 = r_file.json().get("content", "")
+                import base64
+                if content_b64:
+                    content_str = base64.b64decode(content_b64).decode("utf-8", errors="ignore")
+                    has_checkstyle = "maven-checkstyle-plugin" in content_str
+                    has_spotless = "spotless-maven-plugin" in content_str
+                    file_status["pom_style_check"] = has_checkstyle or has_spotless
+                    print(f"    > Checkstyle/Spotless configured: {file_status['pom_style_check']}")
+            except Exception as e:
+                print(f"    > Failed to parse pom.xml: {e}")
+                file_status["pom_style_check"] = False
+
+    with open(os.path.join(out_dir, "files_structure.json"), "w", encoding="utf-8") as f:
+        json.dump(file_status, f, ensure_ascii=False, indent=2)
+
     print("[OK] 数据采集完成")
 
 
