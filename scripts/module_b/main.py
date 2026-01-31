@@ -18,7 +18,7 @@ def run_pipeline():
     print("Module B 分析流水线启动")
     print("="*60)
 
-    # Step 1: 获取数据
+    # 1. 获取数据
     print("\n[Step 1/3] 获取最新提交数据 (get_git_data)")
     try:
         get_git_data.main()
@@ -26,7 +26,7 @@ def run_pipeline():
         print(f"数据获取中断: {e}")
         return False
 
-    # Step 2: 清洗数据
+    # 2. 清洗数据
     print("\n[Step 2/3] 清洗数据 (clean_git_data)")
     try:
         clean_git_data.main()
@@ -34,7 +34,7 @@ def run_pipeline():
         print(f"数据清洗失败: {e}")
         return False
 
-    # Step 3: 可视化
+    # 3. 可视化
     print("\n[Step 3/3] 生成图表 (visualizer)")
     try:
         visualizer.main()
