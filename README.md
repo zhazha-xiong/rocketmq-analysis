@@ -35,6 +35,23 @@ pip install -r requirements.txt
    
    输出结果位于 `data/module_b/` 和 `figures/module_b/`。
 
+### 模块C
+
+1. **配置 Token**  
+   首先需要[获取Github令牌](https://github.com/settings/tokens)（Classic Token，勾选 `repo` 权限即可）。  
+   将 `scripts/module_c/.env.example` 复制为 `scripts/module_c/.env`，并将令牌填入：
+   ```ini
+   GITHUB_TOKEN=your_token_here
+   ```
+
+2. **一键运行**  
+   该命令会自动执行：数据采集 -> 数据清洗 -> 图表生成 -> 报告生成。
+   ```bat
+   python scripts/module_c/main.py
+   ```
+   
+   输出结果位于 `data/module_c/` 和 `figures/module_c/`。
+
 ## 评分规则
 
 ### 模块C
