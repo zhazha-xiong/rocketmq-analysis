@@ -151,10 +151,10 @@
     │   ├── module_b
     │   └── module_c
     ├── scripts
-    │   ├── module_a/
-    │   ├── module_b/
-    │   ├── module_c/
-    │   └── module_d/ 
+    │   ├── module_a
+    │   ├── module_b
+    │   ├── module_c
+    │   └── module_d
     └── docs/
     ```
 
@@ -171,6 +171,3 @@
         *   无幻觉 (Hallucination)：提到的数据必须在原始 CSV/JSON 中存在。
         *   逻辑自洽：给出的建议符合 RocketMQ 项目实际情况。
 
-### 3.3 自动化 (Automation)
-*   移除复杂的 CI Pipeline，改为**本地脚本化运行**。
-*   通过 `run_analysis.bat` 或 `Makefile` 封装全流程。
