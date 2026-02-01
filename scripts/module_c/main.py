@@ -2,6 +2,9 @@ import os
 import sys
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if scripts_dir not in sys.path:
+    sys.path.insert(0, scripts_dir)
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 

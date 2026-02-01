@@ -7,7 +7,7 @@ from module_utils import github_get_json, github_headers, load_github_token, rep
 
 
 def main() -> None:
-    token = load_github_token(missing_hint="请在scripts/module_b/.env填写GITHUB_TOKEN")
+    token = load_github_token(missing_hint="请在scripts/.env填写GITHUB_TOKEN", caller_file=__file__)
 
     owner, repo = "apache", "rocketmq"
     since = "2013-03-15T00:00:00Z"

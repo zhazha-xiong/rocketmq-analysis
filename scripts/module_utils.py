@@ -60,8 +60,30 @@ def run_four_step_pipeline(
     return True
 
 
-def load_github_token(*, missing_hint: str) -> str:
-    load_dotenv()
+def load_github_token(*, missing_hint: str, caller_file: str | None = None) -> str:
+    # 统一支持“公共 .env”：优先模块目录，其次 scripts/.env，再次仓库根目录 .env，最后 cwd/.env
+    candidates: list[str] = []
+
+    if caller_file:
+        candidates.append(os.path.join(os.path.dirname(os.path.abspath(caller_file)), ".env"))
+
+    scripts_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates.append(os.path.join(scripts_dir, ".env"))
+
+    repo_root = os.path.abspath(os.path.join(scripts_dir, ".."))
+    candidates.append(os.path.join(repo_root, ".env"))
+
+    candidates.append(os.path.join(os.getcwd(), ".env"))
+
+    seen: set[str] = set()
+    for env_path in candidates:
+        if env_path in seen:
+            continue
+        seen.add(env_path)
+
+        if os.path.exists(env_path):
+            load_dotenv(dotenv_path=env_path)
+            break
 
     token = os.getenv("GITHUB_TOKEN")
     if not token:

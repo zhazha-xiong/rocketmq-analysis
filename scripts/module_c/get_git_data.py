@@ -11,7 +11,7 @@ from module_utils import (
 
 
 def main() -> None:
-    token = load_github_token(missing_hint="请在scripts/module_c/.env填写GITHUB_TOKEN")
+    token = load_github_token(missing_hint="请在scripts/.env填写GITHUB_TOKEN", caller_file=__file__)
 
     owner, repo = "apache", "rocketmq"
     
