@@ -1,9 +1,15 @@
 import os
-from datetime import datetime
+import sys
 from typing import Iterable
 
 import pandas as pd
 from chinese_calendar import is_workday
+
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if scripts_dir not in sys.path:
+    sys.path.insert(0, scripts_dir)
+
+from report_utils import get_repo_root, now_str, write_text  # noqa: E402
 
 
 def _safe_pct(numerator: int, denominator: int) -> float:
@@ -25,7 +31,7 @@ def _md_table(rows: Iterable[tuple[str, str]]) -> str:
     return "\n".join(lines)
 
 
-def load_and_enrich_clean_commits(clean_csv_path: str) -> pd.DataFrame:
+def load_data(clean_csv_path: str) -> pd.DataFrame:
     if not os.path.exists(clean_csv_path):
         raise RuntimeError(f"清洗后的提交数据不存在: {clean_csv_path}，请先运行模块 B 的数据采集与清洗")
 
@@ -54,13 +60,14 @@ def load_and_enrich_clean_commits(clean_csv_path: str) -> pd.DataFrame:
     return df
 
 
-def generate_report(df: pd.DataFrame, *, figures_rel_dir: str) -> str:
-    now_str = datetime.now().strftime("%Y-%m-%d")
+def build_markdown(df: pd.DataFrame, *, figures_rel_dir: str) -> str:
+    generated_at = now_str()
 
     if df.empty:
         return (
             "# 模块 B：研发效能与工作节律（提交历史）\n\n"
-            f"生成日期：{now_str}\n\n"
+            f"生成时间：{generated_at}\n"
+            "评估对象：Apache RocketMQ (GitHub)\n\n"
             "## 1. 分析范围\n"
             "- 仓库：`apache/rocketmq`\n"
             "- 数据源：GitHub REST API（Commits API）\n"
@@ -124,7 +131,8 @@ def generate_report(df: pd.DataFrame, *, figures_rel_dir: str) -> str:
     report = [
         "# 模块 B：研发效能与工作节律（提交历史）",
         "",
-        f"生成日期：{now_str}",
+        f"生成时间：{generated_at}",
+        "评估对象：Apache RocketMQ (GitHub)",
         "",
         "## 1. 分析范围",
         "- 仓库：`apache/rocketmq`",
@@ -170,18 +178,15 @@ def generate_report(df: pd.DataFrame, *, figures_rel_dir: str) -> str:
 
 
 def main() -> None:
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    repo_root = get_repo_root(__file__)
     clean_csv_path = os.path.join(repo_root, "data", "module_b", "clean_commits.csv")
     report_path = os.path.join(repo_root, "data", "module_b", "REPORT.md")
 
     figures_rel_dir = "../../figures/module_b"
 
-    df = load_and_enrich_clean_commits(clean_csv_path)
-    md = generate_report(df, figures_rel_dir=figures_rel_dir)
-
-    os.makedirs(os.path.dirname(report_path), exist_ok=True)
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(md)
+    df = load_data(clean_csv_path)
+    md = build_markdown(df, figures_rel_dir=figures_rel_dir)
+    write_text(report_path, md)
 
     print(f"[OK] 模块 B 子报告已生成: {report_path}")
 
