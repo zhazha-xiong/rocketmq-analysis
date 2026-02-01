@@ -1,49 +1,40 @@
 import os
 import sys
-import subprocess
 
-def run_step(step_name, script_name):
-    print(f"\n{'='*20} {step_name} {'='*20}")
-    script_path = os.path.join(os.path.dirname(__file__), script_name)
-    try:
-        if not os.path.exists(script_path):
-            print(f"[Error] 脚本未找到: {script_path}")
-            return False
-            
-        result = subprocess.run([sys.executable, script_path], check=True)
-        return result.returncode == 0
-    except subprocess.CalledProcessError as e:
-        print(f"[Error] {step_name} 失败: {e}")
-        return False
-    except Exception as e:
-        print(f"[Error] 执行异常: {e}")
-        return False
+current_dir = os.path.dirname(os.path.abspath(__file__))
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if scripts_dir not in sys.path:
+    sys.path.insert(0, scripts_dir)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
-def main():
-    print("启动模块 C 自动化评估流程...")
-    
-    # 1. 获取数据
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "module_c")
+try:
+    import get_git_data
+    import clean_git_data
+    import visualizer
+    import report_generator
+    from module_utils import repo_root_from, run_four_step_pipeline
+except ImportError as e:
+    print(f"[Error] 模块导入失败: {e}")
+    sys.exit(1)
+def run_pipeline() -> bool:
+    repo_root = repo_root_from(__file__)
+    os.makedirs(os.path.join(repo_root, "data", "module_c"), exist_ok=True)
+    os.makedirs(os.path.join(repo_root, "figures", "module_c"), exist_ok=True)
+    data_dir = os.path.join(repo_root, "data", "module_c")
     commits_file = os.path.join(data_dir, "commits.json")
-    
-    if not os.path.exists(commits_file):
-        print("[Info] 本地数据缺失，开始拉取数据...")
-        if not run_step("1. 获取 GitHub 数据", "get_git_data.py"): return
-    else:
-        print("[Info] 检测到本地数据，跳过数据拉取")
 
-    # 2. 清洗与评分
-    if not run_step("2. 数据清洗与评分", "clean_git_data.py"): return
+    return run_four_step_pipeline(
+        module_label="Module C",
+        data_path_to_skip_fetch=commits_file,
+        fetch_func=get_git_data.main,
+        clean_func=clean_git_data.main,
+        visualize_func=visualizer.main,
+        report_func=report_generator.main,
+    )
 
-    # 3. 可视化
-    if not run_step("3. 生成可视化图表", "visualizer.py"): return
-    
-    # 4. 生成报告
-    if not run_step("4. 生成 Markdown 报告", "report_generator.py"): return
-
-    print(f"\n{'='*20} 流程结束 {'='*20}")
-    print(f"评估报告已生成: {os.path.join(data_dir, 'REPORT.md')}")
-    print(f"图表已保存至: figures/module_c/")
 
 if __name__ == "__main__":
-    main()
+    success = run_pipeline()
+    if not success:
+        sys.exit(1)

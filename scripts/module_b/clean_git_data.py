@@ -23,7 +23,6 @@ def main() -> None:
     
     # 5. 存入新的csv
     clean_csv_path = os.path.join(repo_root, "data", "module_b", "clean_commits.csv")
-    os.makedirs(os.path.dirname(clean_csv_path), exist_ok=True)
 
     df[["time", "author_name"]].to_csv(clean_csv_path, index=False, header=["time", "name"])
 
