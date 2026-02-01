@@ -2,14 +2,16 @@ import os
 import sys
 
 import pandas as pd
+
+
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+scripts_dir = os.path.join(repo_root, "scripts")
+if scripts_dir not in sys.path:
+    sys.path.insert(0, scripts_dir)
+
 from module_b import report_generator
 
 def _import_report_generator():
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    scripts_dir = os.path.join(repo_root, "scripts")
-    if scripts_dir not in sys.path:
-        sys.path.insert(0, scripts_dir)
-
     return report_generator
 
 
@@ -44,9 +46,9 @@ def test_load_data_computes_overtime(monkeypatch, tmp_path):
     df = rg.load_data(str(clean_csv))
 
     assert set(["hour", "weekday", "date", "is_workday", "is_overtime"]).issubset(df.columns)
-    assert bool(df.loc[df["name"] == "alice", "is_overtime"].iloc[0]) is True  # 09:00
-    assert bool(df.loc[df["name"] == "bob", "is_overtime"].iloc[0]) is False  # 10:00
-    assert bool(df.loc[df["name"] == "carol", "is_overtime"].iloc[0]) is True  # 19:00
+    assert bool(df.loc[df["name"] == "alice", "is_overtime"].iloc[0]) is True
+    assert bool(df.loc[df["name"] == "bob", "is_overtime"].iloc[0]) is False
+    assert bool(df.loc[df["name"] == "carol", "is_overtime"].iloc[0]) is True
 
 
 def test_build_markdown_empty(monkeypatch):

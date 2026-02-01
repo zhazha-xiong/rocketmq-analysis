@@ -2,15 +2,16 @@ import os
 import sys
 
 import pandas as pd
+
+
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+scripts_dir = os.path.join(repo_root, "scripts")
+if scripts_dir not in sys.path:
+    sys.path.insert(0, scripts_dir)
+
 from module_b.clean_git_data import clean_commits_csv
 
 def test_clean_commits_csv_filters_merge_and_shifts_timezone(tmp_path):
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    scripts_dir = os.path.join(repo_root, "scripts")
-    if scripts_dir not in sys.path:
-        sys.path.insert(0, scripts_dir)
-
-
     commits_csv = tmp_path / "commits.csv"
     out_csv = tmp_path / "clean_commits.csv"
 
