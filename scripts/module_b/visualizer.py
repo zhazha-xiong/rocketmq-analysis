@@ -203,7 +203,6 @@ def main():
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     csv_path = os.path.join(repo_root, "data", "module_b", "clean_commits.csv")
     output_dir = os.path.join(repo_root, "figures", "module_b")
-    os.makedirs(output_dir, exist_ok=True)
     
     try:
         df = load_and_process_data(csv_path)
