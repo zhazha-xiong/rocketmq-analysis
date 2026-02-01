@@ -7,13 +7,19 @@
 在仓库根目录执行：
 
 ```bat
-cd /d F:\workSpace\rocketmq-analysis
-
 python -m venv .venv
 .venv\Scripts\activate
 
 python -m pip install -U pip
 pip install -r requirements.txt
+```
+
+## 单元测试
+
+在仓库根目录执行：
+
+```bat
+.venv\Scripts\python.exe -m pytest -q
 ```
 
 ## 运行
