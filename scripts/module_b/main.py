@@ -14,46 +14,52 @@ except ImportError as e:
     print(f"[Error] 模块导入失败: {e}")
     sys.exit(1)
 
+
+def _repo_root() -> str:
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+
+def _run_step(step_no: int, total_steps: int, title: str, func) -> bool:
+    print(f"\n[Step {step_no}/{total_steps}] {title}")
+    try:
+        func()
+        return True
+    except Exception as e:
+        print(f"[Error] {title} 失败: {e}")
+        return False
+
 def run_pipeline():
-    print("="*60)
+    total_steps = 4
+
+    print("=" * 60)
     print("Module B 分析流水线启动")
-    print("="*60)
+    print("=" * 60)
 
-    # 1. 获取数据
-    print("\n[Step 1/4] 获取最新提交数据 (get_git_data)")
-    try:
-        get_git_data.main()
-    except Exception as e:
-        print(f"数据获取中断: {e}")
+    repo_root = _repo_root()
+    commits_path = os.path.join(repo_root, "data", "module_b", "commits.csv")
+
+    # 1) 数据爬取
+    if os.path.exists(commits_path) and os.path.getsize(commits_path) > 0:
+        print("\n[Info] 检测到本地提交数据，跳过数据拉取")
+    else:
+        if not _run_step(1, total_steps, "数据爬取 (get_git_data)", get_git_data.main):
+            return False
+
+    # 2) 数据清洗
+    if not _run_step(2, total_steps, "数据清洗 (clean_git_data)", clean_git_data.main):
         return False
 
-    # 2. 清洗数据
-    print("\n[Step 2/4] 清洗数据 (clean_git_data)")
-    try:
-        clean_git_data.main()
-    except Exception as e:
-        print(f"数据清洗失败: {e}")
+    # 3) 可视化
+    if not _run_step(3, total_steps, "可视化 (visualizer)", visualizer.main):
         return False
 
-    # 3. 可视化
-    print("\n[Step 3/4] 生成图表 (visualizer)")
-    try:
-        visualizer.main()
-    except Exception as e:
-        print(f"可视化失败: {e}")
+    # 4) 报告生成
+    if not _run_step(4, total_steps, "报告生成 (report_generator)", report_generator.main):
         return False
 
-    # 4. 子报告
-    print("\n[Step 4/4] 生成子报告 (report_generator)")
-    try:
-        report_generator.main()
-    except Exception as e:
-        print(f"子报告生成失败: {e}")
-        return False
-
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Module B 流水线执行成功！")
-    print("="*60)
+    print("=" * 60)
     return True
 
 if __name__ == "__main__":
