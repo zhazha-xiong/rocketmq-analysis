@@ -1,59 +1,118 @@
-import os
-import sys
-import subprocess
+"""
+main.py
 
-def run_module(module_name, script_path, work_dir):
-    print(f"\n{'#'*20} 开始运行 {module_name} {'#'*20}")
-    print(f"脚本路径: {script_path}")
-    print(f"工作目录: {work_dir}")
-    
-    try:
-        # 使用当前 python 解释器执行子脚本
-        result = subprocess.run(
-            [sys.executable, script_path],
-            cwd=work_dir,  # 设置工作目录为项目根目录
-            check=True
-        )
-        print(f"{'#'*20} {module_name} 运行完成 {'#'*20}\n")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"[Error] {module_name} 执行失败，退出代码: {e.returncode}")
-        return False
-    except Exception as e:
-        print(f"[Error] {module_name} 执行异常: {e}")
-        return False
+模块 D 统一入口：
+- 串行运行模块 A / B / C
+- 校验并收集交付物
+- 生成聚合证据报告
+- （可选）调用 LLM 生成 FINAL_REPORT.md
+"""
+
+import sys
+from pathlib import Path
+
+from runner import run_modules
+from collector import collect_outputs
+from aggregator import generate_aggregated_report
+from utils import OUTPUT_DIR
+
+# LLM 调用是可选的，失败也允许系统继续运行
+try:
+    from llm_client import call_llm
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+
+
+# =========================
+# 路径约定
+
+
+FINAL_REPORT_PATH = OUTPUT_DIR / "FINAL_REPORT.md"
+
+
+# =========================
+# 主流程
+# =========================
 
 def main():
-    # 获取当前脚本所在目录 (scripts/module_d)
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    # 获取 scripts 目录
-    scripts_dir = os.path.dirname(current_dir)
-    # 获取项目根目录 (rocketmq-analysis)
-    project_root = os.path.dirname(scripts_dir)
-    
-    print(f"项目根目录: {project_root}")
-    
-    # 定义各模块入口脚本路径 (相对于 scripts 目录)
-    modules = [
-        ("Module A (静态分析)", os.path.join(scripts_dir, "module_a", "main.py")),
-        ("Module B (Git数据分析)", os.path.join(scripts_dir, "module_b", "main.py")),
-        ("Module C (社区评估)", os.path.join(scripts_dir, "module_c", "main.py"))
-    ]
-    
-    # 依次执行模块
-    for name, script in modules:
-        if not os.path.exists(script):
-            print(f"[Error] 找不到脚本: {script}")
-            sys.exit(1)
-            
-        success = run_module(name, script, project_root)
-        if not success:
-            print(f"[Fatal] {name} 失败，终止后续流程。")
-            sys.exit(1)
-            
-    print("\n" + "="*60)
-    print("所有模块 (A, B, C) 执行完毕！")
-    print("="*60)
+    print("\n" + "=" * 70)
+    print(" RocketMQ Engineering Analysis – Module D ")
+    print("=" * 70)
+
+    # Step 1: 运行模块 A / B / C
+    run_results = run_modules()
+
+    # Step 2: 收集交付物
+    collected = collect_outputs(run_results)
+
+    # Step 3: 生成聚合证据报告
+    aggregated_report_path = generate_aggregated_report(collected)
+
+    # Step 4: 调用 LLM 生成最终报告（可降级）
+    if LLM_AVAILABLE:
+        print("\n[Module D] Generating FINAL_REPORT.md using LLM...")
+        try:
+            _run_llm_stage(aggregated_report_path)
+        except Exception as e:
+            print("[WARN] LLM stage failed, falling back to evidence-only report")
+            print(f"       Reason: {e}")
+            _fallback_final_report(aggregated_report_path)
+    else:
+        print("\n[Module D] LLM not available, generating fallback report")
+        _fallback_final_report(aggregated_report_path)
+
+    print("\n[Module D] Pipeline completed successfully.")
+    print(f"[Module D] Final report path: {FINAL_REPORT_PATH}")
+    print("=" * 70)
+
+
+# =========================
+# LLM 相关
+# =========================
+
+def _run_llm_stage(aggregated_report_path: Path):
+    """
+    使用 LLM 生成 FINAL_REPORT.md
+    """
+    FINAL_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # 1. 读取聚合报告内容作为上下文
+    print(f"  -> Reading context from {aggregated_report_path.name}...")
+    content = aggregated_report_path.read_text(encoding="utf-8")
+
+    # 2. 调用 LLM 获取分析结果
+    print("  -> Sending request to LLM (this may take a while)...")
+    analysis_result = call_llm(content)
+
+    # 3. 写入最终报告
+    FINAL_REPORT_PATH.write_text(analysis_result, encoding="utf-8")
+    print("  -> AI Analysis successfully written to FINAL_REPORT.md")
+
+
+def _fallback_final_report(aggregated_report_path: Path):
+    """
+    LLM 不可用时的降级方案：
+    直接复制 AGGREGATED_REPORT.md
+    """
+    FINAL_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    content = aggregated_report_path.read_text(encoding="utf-8")
+    FINAL_REPORT_PATH.write_text(
+        "# FINAL REPORT (Evidence Only)\n\n"
+        "⚠️ 本报告未经过大模型综合解读，仅包含自动化聚合的证据内容。\n\n"
+        + content,
+        encoding="utf-8",
+    )
+
+
+# =========================
+# CLI 入口
+# =========================
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n[Module D] Interrupted by user.")
+        sys.exit(130)
