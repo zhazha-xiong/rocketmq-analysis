@@ -1,19 +1,71 @@
 # rocketmq-analysis
 
-用于课程作业的 Apache RocketMQ 仓库分析项目。
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-Apache--2.0-green)
+
+
+> 开源软件基础 Apache RocketMQ 仓库综合分析工具
+
+---
+
+## 简介
+
+本项目以 Apache RocketMQ 仓库为例，提供一套可复用的分析流水线，用于从 GitHub 采集数据、清洗派生指标、生成图表并输出 Markdown 报告。
+
+当前包含的分析模块（均在 `scripts/` 下）：
+
+- 模块A：代码静态分析
+- 模块B：提交历史分析
+- 模块C：仓库规范性评估
+
+每个模块运行后会在对应目录生成：
+
+- `data/module_x/`：原始数据、清洗结果与 `REPORT.md`
+- `figures/module_x/`：可视化图表
+
+**目录结构**：
+```text
+rocketmq-analysis
+├── data
+│   ├── module_a
+│   ├── module_b
+│   └── module_c
+├── figures
+│   ├── module_a
+│   ├── module_b
+│   └── module_c
+├── scripts
+│   ├── module_a
+│   ├── module_b
+│   ├── module_c
+│   └── module_d 
+├── tests
+└── docs
+
+```
+
+---
 
 ## 环境准备
+
+要求：Python 3.10+
 
 在仓库根目录执行：
 
 ```bat
-cd /d F:\workSpace\rocketmq-analysis
-
 python -m venv .venv
 .venv\Scripts\activate
 
 python -m pip install -U pip
 pip install -r requirements.txt
+```
+
+## 单元测试
+
+在仓库根目录执行：
+
+```bat
+.venv\Scripts\python.exe -m pytest -q
 ```
 
 ## 运行
@@ -44,6 +96,8 @@ pip install -r requirements.txt
    ```
    
    输出结果位于 `data/module_c/` 和 `figures/module_c/`。
+
+---
 
 ## 评分规则
 
