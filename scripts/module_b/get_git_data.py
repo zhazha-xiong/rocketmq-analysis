@@ -1,33 +1,25 @@
 import os
 import csv
 
-import requests
 from datetime import datetime, timezone
-from dotenv import load_dotenv
+
+from module_utils import github_get_json, github_headers, load_github_token, repo_root_from
 
 
 def main() -> None:
-    load_dotenv()
-
-    token = os.getenv("GITHUB_TOKEN")
-    if not token:
-        raise RuntimeError("请在scripts/module_b/.env填写GITHUB_TOKEN")
+    token = load_github_token(missing_hint="请在scripts/module_b/.env填写GITHUB_TOKEN")
 
     owner, repo = "apache", "rocketmq"
     since = "2013-03-15T00:00:00Z"
     
     until = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "Authorization": f"Bearer {token}",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
+    headers = github_headers(token)
 
     page = 1
     total = 0
 
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    repo_root = repo_root_from(__file__)
     out_path = os.path.join(repo_root, "data", "module_b", "commits.csv")
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
@@ -38,14 +30,12 @@ def main() -> None:
         writer.writerow(["authored_utc", "sha", "author_name", "author_email", "subject"])
 
         while True:
-            r = requests.get(
+            items = github_get_json(
                 f"https://api.github.com/repos/{owner}/{repo}/commits",
                 headers=headers,
                 params={"since": since, "until": until, "per_page": 100, "page": page},
                 timeout=30,
             )
-            r.raise_for_status()
-            items = r.json()
             if not items:
                 break
 

@@ -10,6 +10,7 @@ if scripts_dir not in sys.path:
     sys.path.insert(0, scripts_dir)
 
 from report_utils import get_repo_root, now_str, write_text  # noqa: E402
+from module_utils import write_report  # noqa: E402
 
 
 def _safe_pct(numerator: int, denominator: int) -> float:
@@ -186,9 +187,7 @@ def main() -> None:
 
     df = load_data(clean_csv_path)
     md = build_markdown(df, figures_rel_dir=figures_rel_dir)
-    write_text(report_path, md)
-
-    print(f"[OK] 模块 B 子报告已生成: {report_path}")
+    write_report(report_path, md, module_label="模块 B")
 
 
 if __name__ == "__main__":
