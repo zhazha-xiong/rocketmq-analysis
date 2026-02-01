@@ -21,7 +21,6 @@ def main() -> None:
 
     repo_root = repo_root_from(__file__)
     out_path = os.path.join(repo_root, "data", "module_b", "commits.csv")
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     print("===开始采集数据===")
 

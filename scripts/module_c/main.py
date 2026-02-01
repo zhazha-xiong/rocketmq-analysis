@@ -19,6 +19,8 @@ except ImportError as e:
     sys.exit(1)
 def run_pipeline() -> bool:
     repo_root = repo_root_from(__file__)
+    os.makedirs(os.path.join(repo_root, "data", "module_c"), exist_ok=True)
+    os.makedirs(os.path.join(repo_root, "figures", "module_c"), exist_ok=True)
     data_dir = os.path.join(repo_root, "data", "module_c")
     commits_file = os.path.join(data_dir, "commits.json")
 

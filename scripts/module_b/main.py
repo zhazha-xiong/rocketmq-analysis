@@ -20,6 +20,8 @@ except ImportError as e:
 
 def run_pipeline():
     repo_root = repo_root_from(__file__)
+    os.makedirs(os.path.join(repo_root, "data", "module_b"), exist_ok=True)
+    os.makedirs(os.path.join(repo_root, "figures", "module_b"), exist_ok=True)
     commits_path = os.path.join(repo_root, "data", "module_b", "commits.csv")
 
     return run_four_step_pipeline(

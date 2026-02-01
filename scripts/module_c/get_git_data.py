@@ -19,7 +19,6 @@ def main() -> None:
     
     repo_root = repo_root_from(__file__)
     out_dir = os.path.join(repo_root, "data", "module_c")
-    os.makedirs(out_dir, exist_ok=True)
 
     print("===开始采集数据===")
 
