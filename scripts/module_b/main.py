@@ -9,6 +9,7 @@ try:
     import get_git_data
     import clean_git_data
     import visualizer
+    import report_generator
 except ImportError as e:
     print(f"[Error] 模块导入失败: {e}")
     sys.exit(1)
@@ -19,7 +20,7 @@ def run_pipeline():
     print("="*60)
 
     # 1. 获取数据
-    print("\n[Step 1/3] 获取最新提交数据 (get_git_data)")
+    print("\n[Step 1/4] 获取最新提交数据 (get_git_data)")
     try:
         get_git_data.main()
     except Exception as e:
@@ -27,7 +28,7 @@ def run_pipeline():
         return False
 
     # 2. 清洗数据
-    print("\n[Step 2/3] 清洗数据 (clean_git_data)")
+    print("\n[Step 2/4] 清洗数据 (clean_git_data)")
     try:
         clean_git_data.main()
     except Exception as e:
@@ -35,11 +36,19 @@ def run_pipeline():
         return False
 
     # 3. 可视化
-    print("\n[Step 3/3] 生成图表 (visualizer)")
+    print("\n[Step 3/4] 生成图表 (visualizer)")
     try:
         visualizer.main()
     except Exception as e:
         print(f"可视化失败: {e}")
+        return False
+
+    # 4. 子报告
+    print("\n[Step 4/4] 生成子报告 (report_generator)")
+    try:
+        report_generator.main()
+    except Exception as e:
+        print(f"子报告生成失败: {e}")
         return False
 
     print("\n" + "="*60)
