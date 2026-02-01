@@ -97,8 +97,7 @@ def write_json(path: str, data: Any) -> None:
 
 
 def write_report(report_path: str, markdown: str, *, module_label: str) -> None:
-    # 复用既有 report_utils 的落盘逻辑（含自动创建目录）
-    from report_utils import write_text  # noqa: WPS433
+    from report_utils import write_text
 
     write_text(report_path, markdown)
     print(f"[OK] {module_label} 子报告已生成: {report_path}")

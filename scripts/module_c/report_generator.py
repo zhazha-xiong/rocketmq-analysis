@@ -6,8 +6,8 @@ scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if scripts_dir not in sys.path:
     sys.path.insert(0, scripts_dir)
 
-from report_utils import get_repo_root, now_str, write_text  # noqa: E402
-from module_utils import write_report  # noqa: E402
+from report_utils import get_repo_root, now_str, write_text
+from module_utils import write_report
 
 def load_data(json_path: str) -> dict:
     if not os.path.exists(json_path):
