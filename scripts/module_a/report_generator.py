@@ -61,9 +61,9 @@ def build_markdown(
     
     # Bandit统计
     total_issues = int(len(df_bandit))
-    high_severity = int((df_bandit['issue_severity'] == 'HIGH').sum()) if not df_bandit.empty else 0
-    medium_severity = int((df_bandit['issue_severity'] == 'MEDIUM').sum()) if not df_bandit.empty else 0
-    low_severity = int((df_bandit['issue_severity'] == 'LOW').sum()) if not df_bandit.empty else 0
+    high_severity = int((df_bandit['severity'] == 'HIGH').sum()) if not df_bandit.empty else 0
+    medium_severity = int((df_bandit['severity'] == 'MEDIUM').sum()) if not df_bandit.empty else 0
+    low_severity = int((df_bandit['severity'] == 'LOW').sum()) if not df_bandit.empty else 0
     
     high_pct = _safe_pct(high_severity, total_issues)
     medium_pct = _safe_pct(medium_severity, total_issues)
@@ -141,7 +141,7 @@ def build_markdown(
         "",
         "## 3. 图表与解读",
         f"![安全问题严重性分布]({fig('bandit_severity_distribution.png')})",
-        f"- 展示Bandit检测到的安全问题按严重性等级（HIGH/MEDIUM/LOW）的分布情况；高危和中危问题合计占比 {high_pct + medium_pct:.1f}%。",
+        "- 展示Bandit检测到的安全问题按严重性等级（HIGH/MEDIUM/LOW）的分布情况；高危和中危问题合计占比 {high_pct + medium_pct:.1f}%。",
         "",
         f"![TOP 10 安全问题类型]({fig('bandit_top_issues.png')})",
         "- 展示最常见的10种安全问题类型及其出现次数；可用于识别代码中的典型风险模式。",
