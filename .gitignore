@@ -32,3 +32,4 @@ build/
 temp_repos/
 data/
 figures/
+.pytest_cache/

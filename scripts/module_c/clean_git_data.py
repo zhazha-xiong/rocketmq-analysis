@@ -4,6 +4,122 @@ import re
 from datetime import datetime
 
 
+def calculate_scores(
+    commits: list[dict],
+    prs: list[dict],
+    runs: list[dict],
+    releases: list[dict],
+    files_status: dict,
+    *,
+    generated_at: str | None = None,
+) -> dict:
+    # --- 维度 1: 版本控制 (25分) ---
+    # 1.1 Commit 规范性检查 (15分)
+    valid_commits = 0
+    pattern = re.compile(
+        r"^((feat|fix|docs|style|refactor|test|chore|perf|build|ci|revert)(\(.+\))?:|\[ISSUE #\d+\])",
+        re.IGNORECASE,
+    )
+    for c in commits or []:
+        msg = (c.get("commit", {}) or {}).get("message", "")
+        msg_first_line = msg.splitlines()[0].strip() if msg else ""
+        if pattern.match(msg_first_line):
+            valid_commits += 1
+    score_vc_commit = (valid_commits / len(commits)) * 15 if commits else 0
+
+    # 1.2 PR 流程规范性检查 (10分)
+    valid_prs = 0
+    for pr in prs or []:
+        has_body = pr.get("body") and len((pr.get("body", "") or "").strip()) > 10
+        has_meta = pr.get("assignee") or pr.get("requested_reviewers") or pr.get("labels")
+        if has_body or has_meta:
+            valid_prs += 1
+    score_vc_pr = (valid_prs / len(prs)) * 10 if prs else 0
+
+    score_version_control = score_vc_commit + score_vc_pr
+
+    # --- 维度 2: 持续集成 (20分) ---
+    # 2.1 Workflow 运行健康度 (15分)
+    effective_runs = [
+        r
+        for r in (runs or [])
+        if (r.get("conclusion") or "").lower() not in ["cancelled", "skipped", "neutral"]
+    ]
+    success_runs = sum(1 for r in effective_runs if (r.get("conclusion") or "").lower() == "success")
+    score_ci_health = (success_runs / len(effective_runs)) * 15 if effective_runs else 0
+
+    # 2.2 CI 配置检查 (5分)
+    score_ci_config = 5 if files_status.get(".github/workflows") else 0
+    score_ci = score_ci_health + score_ci_config
+
+    # --- 维度 3: 社区治理 (30分) ---
+    # 3.1 关键文档检查 (15分)
+    docs = ["LICENSE", "README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md"]
+    found_docs = sum(1 for d in docs if files_status.get(d))
+    score_gov_docs = found_docs * 3.75
+
+    # 3.2 版本发布周期 (15分)
+    score_gov_release = 0
+    if len(releases or []) >= 2:
+        dates = [
+            datetime.strptime(r["published_at"], "%Y-%m-%dT%H:%M:%SZ")
+            for r in (releases[:10] if releases else [])
+            if r.get("published_at")
+        ]
+        if len(dates) >= 2:
+            deltas = [(dates[i] - dates[i + 1]).days for i in range(len(dates) - 1)]
+            avg_days = sum(deltas) / len(deltas)
+            score_gov_release = 15 if avg_days <= 90 else max(0, 15 - (avg_days - 90) * 0.1)
+    elif len(releases or []) == 1:
+        score_gov_release = 10
+
+    score_governance = score_gov_docs + score_gov_release
+
+    # --- 维度 4: 代码质量 (25分) ---
+    # 4.1 测试配置检查 (10分)
+    score_cq_test = 10 if files_status.get("pom.xml") else 0
+
+    # 4.2 代码规范配置检查 (15分)
+    if files_status.get(".editorconfig"):
+        score_cq_style = 15
+    elif files_status.get("pom.xml"):
+        score_cq_style = 15
+    else:
+        score_cq_style = 0
+
+    score_quality = score_cq_test + score_cq_style
+
+    if generated_at is None:
+        generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    final_data = {
+        "version_control": {
+            "total": round(score_version_control, 2),
+            "commit_norm": round(score_vc_commit, 2),
+            "pr_process": round(score_vc_pr, 2),
+        },
+        "ci_health": {
+            "total": round(score_ci, 2),
+            "run_rate": round(score_ci_health, 2),
+            "config_exist": score_ci_config,
+            "stats": f"{success_runs}/{len(effective_runs)}",
+        },
+        "governance": {
+            "total": round(score_governance, 2),
+            "docs": score_gov_docs,
+            "release_cycle": round(score_gov_release, 2),
+        },
+        "code_quality": {
+            "total": round(score_quality, 2),
+            "test_config": score_cq_test,
+            "style_config": score_cq_style,
+        },
+        "total_score": round(score_version_control + score_ci + score_governance + score_quality, 2),
+        "generated_at": generated_at,
+    }
+    return final_data
+
+
 def main() -> None:
     # 1. 基础路径配置
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -28,102 +144,7 @@ def main() -> None:
 
     print("===开始数据清洗与评分计算===")
 
-    # 3. 指标计算逻辑
-    
-    # --- 维度 1: 版本控制 (25分) ---
-    # 1.1 Commit 规范性检查 (15分)
-    valid_commits = 0
-    pattern = re.compile(r"^((feat|fix|docs|style|refactor|test|chore|perf|build|ci|revert)(\(.+\))?:|\[ISSUE #\d+\])", re.IGNORECASE)
-    for c in commits:
-        msg = c.get("commit", {}).get("message", "").splitlines()[0].strip()
-        if pattern.match(msg):
-            valid_commits += 1
-    score_vc_commit = (valid_commits / len(commits)) * 15 if commits else 0
-
-    # 1.2 PR 流程规范性检查 (10分)
-    valid_prs = 0
-    for pr in prs:
-        has_body = pr.get("body") and len(pr.get("body", "").strip()) > 10
-        has_meta = pr.get("assignee") or pr.get("requested_reviewers") or pr.get("labels")
-        if has_body or has_meta:
-            valid_prs += 1
-    score_vc_pr = (valid_prs / len(prs)) * 10 if prs else 0
-    
-    score_version_control = score_vc_commit + score_vc_pr
-
-    # --- 维度 2: 持续集成 (20分) ---
-    # 2.1 Workflow 运行健康度 (15分)
-    effective_runs = [r for r in runs if r.get("conclusion") not in ["cancelled", "skipped", "neutral"]]
-    success_runs = sum(1 for r in effective_runs if r.get("conclusion") == "success")
-    
-    if effective_runs:
-        score_ci_health = (success_runs / len(effective_runs)) * 15
-    else:
-        score_ci_health = 0
-    
-    # 2.2 CI 配置检查 (5分)
-    score_ci_config = 5 if files_status.get(".github/workflows") else 0
-    
-    score_ci = score_ci_health + score_ci_config
-
-    # --- 维度 3: 社区治理 (30分) ---
-    # 3.1 关键文档检查 (15分)
-    docs = ["LICENSE", "README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md"]
-    found_docs = sum(1 for d in docs if files_status.get(d))
-    score_gov_docs = found_docs * 3.75
-
-    # 3.2 版本发布周期 (15分)
-    score_gov_release = 0
-    if len(releases) >= 2:
-        dates = [datetime.strptime(r["published_at"], "%Y-%m-%dT%H:%M:%SZ") for r in releases[:10] if r.get("published_at")]
-        if len(dates) >= 2:
-            deltas = [(dates[i] - dates[i+1]).days for i in range(len(dates)-1)]
-            avg_days = sum(deltas) / len(deltas)
-            score_gov_release = 15 if avg_days <= 90 else max(0, 15 - (avg_days - 90) * 0.1)
-    elif len(releases) == 1:
-        score_gov_release = 10
-    
-    score_governance = score_gov_docs + score_gov_release
-
-    # --- 维度 4: 代码质量 (25分) ---
-    # 4.1 测试配置检查 (10分)
-    score_cq_test = 10 if files_status.get("pom.xml") else 0 
-    # 4.2 代码规范配置检查 (15分)
-    if files_status.get(".editorconfig"):
-        score_cq_style = 15
-    elif files_status.get("pom.xml"):
-        score_cq_style = 15
-    else:
-        score_cq_style = 0
-    
-    score_quality = score_cq_test + score_cq_style
-
-    # 4. 结果汇总与持久化
-    final_data = {
-        "version_control": {
-            "total": round(score_version_control, 2),
-            "commit_norm": round(score_vc_commit, 2),
-            "pr_process": round(score_vc_pr, 2)
-        },
-        "ci_health": {
-            "total": round(score_ci, 2),
-            "run_rate": round(score_ci_health, 2), 
-            "config_exist": score_ci_config,
-            "stats": f"{success_runs}/{len(effective_runs)}"
-        },
-        "governance": {
-            "total": round(score_governance, 2),
-            "docs": score_gov_docs, 
-            "release_cycle": round(score_gov_release, 2)
-        },
-        "code_quality": {
-            "total": round(score_quality, 2),
-            "test_config": score_cq_test,
-            "style_config": score_cq_style
-        },
-        "total_score": round(score_version_control + score_ci + score_governance + score_quality, 2),
-        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
+    final_data = calculate_scores(commits, prs, runs, releases, files_status)
     
     print(f"[INFO] 评分结果: {final_data['total_score']:.2f} / 100")
     
