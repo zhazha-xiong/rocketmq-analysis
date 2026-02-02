@@ -5,7 +5,7 @@ import subprocess
 import json
 import pandas as pd
 import os
-
+import sys
 def run_bandit_scan(repo_paths, output_file):
     """
     对指定仓库运行Bandit扫描
@@ -29,7 +29,8 @@ def run_bandit_scan(repo_paths, output_file):
         # -r: 递归扫描
         # -f json: 输出JSON格式
         cmd = [
-            'bandit',
+            sys.executable,
+            '-m', 'bandit',
             '-r', repo_path,
             '-f', 'json',
             '--exclude', '**/test_*.py,**/tests/**'  # 排除测试文件

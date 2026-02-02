@@ -77,6 +77,32 @@ pip install -r requirements.txt
    GITHUB_TOKEN=your_token_here
    ```
 
+### 模块A
+
+**前置准备**  
+   需要先克隆目标Python客户端仓库到 `temp_repos/` 目录：
+   ```bat
+   mkdir temp_repos
+   cd temp_repos
+   git clone https://github.com/apache/rocketmq-client-python.git
+   git clone https://github.com/apache/rocketmq-clients.git
+   cd ..
+   ```
+
+**一键运行**  
+   该命令会自动执行：文件扫描 -> Bandit安全扫描 -> Lizard复杂度分析 -> 图表生成 -> 报告生成。
+   ```bat
+   python scripts/module_a/main.py
+   ```
+   
+   输出结果位于 `data/module_a/` 和 `figures/module_a/`。
+
+**单独生成报告**  
+   如果已经运行过完整分析，可以单独重新生成报告：
+   ```bat
+   python scripts/module_a/report_generator.py
+   ```
+
 ### 模块B
 
 **一键运行**  

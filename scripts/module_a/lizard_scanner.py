@@ -5,7 +5,7 @@ import subprocess
 import pandas as pd
 import os
 import re
-
+import sys
 def run_lizard_scan(repo_paths, output_file):
     """
     对指定仓库运行Lizard扫描
@@ -29,7 +29,8 @@ def run_lizard_scan(repo_paths, output_file):
         # -l python: 只分析Python文件
         # --csv: 输出CSV格式
         cmd = [
-            'lizard',
+            sys.executable,
+            '-m', 'lizard',
             '-l', 'python',
             '--csv',
             repo_path
