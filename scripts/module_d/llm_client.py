@@ -7,8 +7,8 @@ logger = setup_logging()
 def call_llm(content):
     # 1. 获取配置
     api_key = get_env("LLM_API_KEY")
-    base_url = get_env("LLM_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
-    model = get_env("LLM_MODEL_NAME", "qwen-max")
+    base_url = get_env("LLM_BASE_URL")
+    model = get_env("LLM_MODEL_NAME")
 
     if not api_key:
         logger.error("未找到 LLM_API_KEY，请检查 .env 文件")

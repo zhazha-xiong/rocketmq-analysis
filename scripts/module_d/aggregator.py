@@ -68,7 +68,7 @@ def _write_header(f):
 
 def _write_execution_overview(f, collected: Dict[str, dict]):
     """
-    写执行概览（非常重要，老师很爱看）
+    写执行概览
     """
     f.write("## 0. Pipeline Execution Overview\n\n")
     f.write("| Module | Executed | Success | REPORT.md | Figures | Issues |\n")
@@ -124,7 +124,7 @@ def _write_module_section(f, module_name: str, info: dict):
             try:
                 # 转换为相对于项目根目录的路径
                 rel_path = Path(fig).relative_to(PROJECT_ROOT).as_posix()
-                f.write(f"- ..\`{rel_path}`\n")
+                f.write(f"- `{rel_path}`\n")
             except ValueError:
                 f.write(f"- `{fig}`\n")
     else:
