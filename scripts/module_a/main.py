@@ -5,6 +5,7 @@ import file_scanner
 import bandit_scanner
 import lizard_scanner
 import visualizer
+import report_generator
 
 def ensure_directories():
     """确保所需目录存在"""
@@ -74,13 +75,17 @@ def run_all():
     df_analyzed.to_csv("data/module_a/lizard_results.csv", index=False, encoding='utf-8-sig')
     
     # Step 5: 生成可视化图表
-    print("\n[步骤 5/5] 生成可视化图表...")
+    print("\n[步骤 5/6] 生成可视化图表...")
     output_dir = "figures/module_a"
     visualizer.plot_bandit_severity(df_bandit, output_dir)
     visualizer.plot_bandit_issues(df_bandit, output_dir)
     visualizer.plot_complexity_distribution(df_analyzed, output_dir)
     visualizer.plot_top_complex_functions(df_analyzed, output_dir)
     visualizer.plot_repository_comparison(df_bandit, df_analyzed, output_dir)
+    
+    # Step 6: 生成子报告
+    print("\n[步骤 6/6] 生成子报告（REPORT.md）...")
+    report_generator.main()
     
     # 完成
     print("\n" + "=" * 60)
@@ -93,6 +98,8 @@ def run_all():
     print("    - data/module_a/lizard_results.csv")
     print("  图表文件:")
     print("    - figures/module_a/*.png")
+    print("  子报告:")
+    print("    - data/module_a/REPORT.md")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='模块A：Python静态分析')
