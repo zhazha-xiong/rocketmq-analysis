@@ -61,9 +61,9 @@ def build_markdown(
     
     # Bandit统计
     total_issues = int(len(df_bandit))
-    high_severity = int((df_bandit['severity'] == 'HIGH').sum()) if not df_bandit.empty else 0
-    medium_severity = int((df_bandit['severity'] == 'MEDIUM').sum()) if not df_bandit.empty else 0
-    low_severity = int((df_bandit['severity'] == 'LOW').sum()) if not df_bandit.empty else 0
+    high_severity = int((df_bandit['issue_severity'] == 'HIGH').sum()) if not df_bandit.empty else 0
+    medium_severity = int((df_bandit['issue_severity'] == 'MEDIUM').sum()) if not df_bandit.empty else 0
+    low_severity = int((df_bandit['issue_severity'] == 'LOW').sum()) if not df_bandit.empty else 0
     
     high_pct = _safe_pct(high_severity, total_issues)
     medium_pct = _safe_pct(medium_severity, total_issues)
@@ -155,7 +155,7 @@ def build_markdown(
         f"![仓库质量对比]({fig('repository_comparison.png')})",
         "- 对比两个仓库的文件数、问题数和平均复杂度；帮助识别质量差异较大的子项目。",
         "",
-        "## 4. 局限性",
+        "## 4. 局限性与改进方向",
         "- Bandit基于AST静态分析，可能存在误报（False Positive）；部分告警需要人工复核确认实际风险。",
         "- Lizard的复杂度阈值（CCN > 15）为经验值，实际项目可根据团队规范调整。",
         "- 本分析仅针对Python代码，不包含C++扩展模块或其他语言实现。",
