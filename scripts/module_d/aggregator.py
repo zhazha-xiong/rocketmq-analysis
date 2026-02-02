@@ -138,9 +138,8 @@ def _write_module_section(f, module_name: str, info: dict):
     report_path = info.get("report_path")
     if report_path and Path(report_path).exists():
         content = Path(report_path).read_text(encoding="utf-8")
-        f.write("```markdown\n")
         f.write(content.strip())
-        f.write("\n```\n\n")
+        f.write("\n\n\n")
     else:
         f.write(
             "_Original REPORT.md is missing. "
