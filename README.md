@@ -58,7 +58,7 @@ rocketmq-analysis
 
 要求：Python 3.10+
 
-在仓库根目录执行：
+在项目根目录执行：
 
 ```bat
 python -m venv .venv
@@ -70,7 +70,7 @@ pip install -r requirements.txt
 
 ## 单元测试
 
-在仓库根目录执行：
+在项目根目录执行：
 
 ```bat
 .venv\Scripts\python.exe -m pytest -q
