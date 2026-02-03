@@ -34,6 +34,10 @@ def call_llm(content):
     user_tmpl = user_file.read_text(encoding="utf-8")
 
     # 4. 安全替换内容 (避免 .format() 因为内容中的 {} 报错)
+    if "{aggregated_content}" not in user_tmpl:
+        logger.error("用户提示词模板中缺少 {aggregated_content} 占位符")
+        return "错误：用户提示词模板格式错误，缺少 {aggregated_content} 占位符。"
+
     # 使用 replace 替代 format 更加安全
     user_content = user_tmpl.replace("{aggregated_content}", content)
 

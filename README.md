@@ -16,11 +16,17 @@
 - 模块A：代码静态分析
 - 模块B：提交历史分析
 - 模块C：仓库规范性评估
+- 模块D：智能化汇总
 
-每个模块运行后会在对应目录生成：
+A、B、C模块运行后会在对应目录生成：
 
 - `data/module_x/`：原始数据、清洗结果与 `REPORT.md`
 - `figures/module_x/`：可视化图表
+
+D模块为整个程序的统一运行入口，运行后会在对应目录生成：
+
+- `data/module_d/AGGREGATED_REPORT.md`：模块ABC的输出生成聚合报告
+- `docs/FINAL_REPORT.md`：AI分析报告
 
 **目录结构**：
 
@@ -80,7 +86,9 @@ pip install -r requirements.txt
 
 **配置LLM API**
 
-首先获取需要使用的LLM的API、URL及MODEL_NAME，在`scripts/.env`填入：
+获取需要使用的LLM的API、URL及MODEL_NAME，推荐[火山方舟](https://www.volcengine.com/product/ark)以及[阿里云](https://www.aliyun.com/)平台
+
+成功获取后在`scripts/.env`填入：
 
 ```ini
    LLM_API_KEY=your_api_here
@@ -88,10 +96,9 @@ pip install -r requirements.txt
    LLM_MODEL_NAME=your_model_name_here
 ```
 
-### 模块A
-
 **前置准备**
-   需要先克隆目标Python客户端仓库到 `temp_repos/` 目录：
+
+需要先克隆目标Python客户端仓库到 `temp_repos/` 目录，请在项目目录下运行以下代码：
 
 ```bat
    mkdir temp_repos
@@ -102,44 +109,18 @@ pip install -r requirements.txt
 ```
 
 **一键运行**
-   该命令会自动执行：文件扫描 -> Bandit安全扫描 -> Lizard复杂度分析 -> 图表生成 -> 报告生成。
+
+ 该命令会自动执行：模块A -> 模块B -> 模块C -> 整合报告生成 -> AI分析报告生成。
 
 ```bat
    python scripts/module_a/main.py
 ```
 
-   输出结果位于 `data/module_a/` 和 `figures/module_a/`。
+   输出结果位于 `data/module_d/AGGREGATED_REPORT.md` 和 `docs/FINAL_REPORT.md`。
 
-**单独生成报告**
-   如果已经运行过完整分析，可以单独重新生成报告：
+**示例**
 
-```bat
-   python scripts/module_a/report_generator.py
-```
-
-### 模块B
-
-**一键运行**
-   该命令会自动执行：数据采集 -> 数据清洗 -> 图表生成 -> 报告生成。
-
-```bat
-   python scripts/module_b/main.py
-```
-
-   输出结果位于 `data/module_b/` 和 `figures/module_b/`。
-
-### 模块C
-
-**一键运行**
-   该命令会自动执行：数据采集 -> 数据清洗 -> 图表生成 -> 报告生成。
-
-```bat
-   python scripts/module_c/main.py
-```
-
-   输出结果位于 `data/module_c/` 和 `figures/module_c/`。
-
----
+本项目提供了最终结果的示例文件，文件为位于`examples/`下的`demo_result.pdf`。
 
 ## 评分规则
 
