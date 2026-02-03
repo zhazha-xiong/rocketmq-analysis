@@ -116,6 +116,10 @@ pip install -r requirements.txt
 
    输出结果位于 `data/module_d/AGGREGATED_REPORT.md` 和 `docs/FINAL_REPORT.md`。
 
+**示例**
+
+本项目提供了最终结果的示例文件，文件为位于`examples/`下的`demo_result.pdf`。
+
 ## 评分规则
 
 ### 模块C
