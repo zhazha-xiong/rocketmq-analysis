@@ -35,7 +35,8 @@ rocketmq-analysis
 ├── data
 │   ├── module_a
 │   ├── module_b
-│   └── module_c
+│   ├── module_c
+│   └── module_d
 ├── figures
 │   ├── module_a
 │   ├── module_b
@@ -45,6 +46,7 @@ rocketmq-analysis
 │   ├── module_b
 │   ├── module_c
 │   └── module_d 
+├── examples
 ├── tests
 └── docs
 
@@ -77,7 +79,8 @@ pip install -r requirements.txt
 ## 运行
 
 **配置 Token**
-   首先需要[获取Github令牌](https://github.com/settings/tokens)（Classic Token，勾选 `repo` 权限即可）。
+
+首先需要[获取Github令牌](https://github.com/settings/tokens)（Classic Token，勾选 `repo` 权限即可）。
   将 `scripts/.env.example` 复制为 `scripts/.env`，并将令牌填入：
 
 ```ini
@@ -96,9 +99,9 @@ pip install -r requirements.txt
    LLM_MODEL_NAME=your_model_name_here
 ```
 
-**前置准备**
+**前置仓库准备**
 
-需要先克隆目标Python客户端仓库到 `temp_repos/` 目录，请在项目目录下运行以下代码：
+需要先克隆目标Python客户端仓库到 `temp_repos/` 目录，请在项目根目录下运行以下代码：
 
 ```bat
    mkdir temp_repos
@@ -110,10 +113,10 @@ pip install -r requirements.txt
 
 **一键运行**
 
- 该命令会自动执行：模块A -> 模块B -> 模块C -> 整合报告生成 -> AI分析报告生成。
+请在项目根目录下运行以下代码，该命令会自动执行：模块A -> 模块B -> 模块C -> 整合报告生成 -> AI分析报告生成。
 
 ```bat
-   python scripts/module_a/main.py
+   python scripts/module_d/main.py
 ```
 
    输出结果位于 `data/module_d/AGGREGATED_REPORT.md` 和 `docs/FINAL_REPORT.md`。
