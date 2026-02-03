@@ -97,7 +97,8 @@ pip install -r requirements.txt
 ```
 
 **前置准备**
-   需要先克隆目标Python客户端仓库到 `temp_repos/` 目录，请在项目目录下运行以下代码：
+
+需要先克隆目标Python客户端仓库到 `temp_repos/` 目录，请在项目目录下运行以下代码：
 
 ```bat
    mkdir temp_repos
@@ -108,7 +109,8 @@ pip install -r requirements.txt
 ```
 
 **一键运行**
-   该命令会自动执行：模块A -> 模块B -> Lizard复杂度分析 -> 图表生成 -> 报告生成。
+
+ 该命令会自动执行：模块A -> 模块B -> 模块C -> 整合报告生成 -> AI分析报告生成。
 
 ```bat
    python scripts/module_a/main.py
