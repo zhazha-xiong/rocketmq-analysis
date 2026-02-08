@@ -128,6 +128,19 @@ def write_json(data: Any, path: str, indent: int = 2) -> None:
         json.dump(data, f, indent=indent, ensure_ascii=False)
 
 
+def write_report(path: str, content: str, *, module_label: str = "") -> None:
+    """写入 Markdown 报告文件"""
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+    
+    label_info = f"[{module_label}] " if module_label else ""
+    print(f"[Success] {label_info}报告已保存: {path}")
+
+
 def ensure_local_repo(owner: str, name: str, target_dir: str) -> None:
     """
     确保指定仓库已克隆到本地 target_dir。
