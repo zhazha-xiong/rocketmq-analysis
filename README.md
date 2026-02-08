@@ -154,20 +154,6 @@ LLM_API_KEY=xxx
 
 ```ini
    LLM_API_KEY=your_api_here
-   LLM_BASE_URL=your_base_url_here
-   LLM_MODEL_NAME=your_model_name_here
-```
-
-**前置仓库准备**
-
-需要先克隆目标Python客户端仓库到 `temp_repos/` 目录，请在项目根目录下运行以下代码：
-
-```bat
-   mkdir temp_repos
-   cd temp_repos
-   git clone https://github.com/apache/rocketmq-client-python.git
-   git clone https://github.com/apache/rocketmq-clients.git
-   cd ..
 ```
 
 **一键运行**
@@ -175,7 +161,7 @@ LLM_API_KEY=xxx
 请在项目根目录下运行以下代码，该命令会自动执行：模块A -> 模块B -> 模块C -> 整合报告生成 -> AI分析报告生成。
 
 ```bat
-   python scripts/module_d/main.py
+python main.py
 ```
 
    输出结果位于 `data/module_d/AGGREGATED_REPORT.md` 和 `docs/FINAL_REPORT.md`。
