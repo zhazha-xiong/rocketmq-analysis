@@ -102,24 +102,52 @@ def github_headers(token: str) -> dict[str, str]:
 
 def github_get_json(
     url: str,
-    *,
     headers: dict[str, str],
     params: dict[str, Any] | None = None,
     timeout: int = 30,
 ) -> Any:
-    r = requests.get(url, headers=headers, params=params, timeout=timeout)
-    r.raise_for_status()
-    return r.json()
+    """简单的 GitHub API GET 请求封装"""
+    resp = requests.get(url, headers=headers, params=params, timeout=timeout)
+    resp.raise_for_status()
+    return resp.json()
 
 
-def write_json(path: str, data: Any) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+def write_json(data: Any, path: str, indent: int = 2) -> None:
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, indent=indent, ensure_ascii=False)
 
 
-def write_report(report_path: str, markdown: str, *, module_label: str) -> None:
-    from report_utils import write_text
+def ensure_local_repo(owner: str, name: str, target_dir: str) -> None:
+    """
+    确保指定仓库已克隆到本地 target_dir。
+    如果 target_dir 为空或不存在，则执行 git clone。
+    如果已存在且非空，则跳过（假设已存在）。
+    """
+    import subprocess
+    from pathlib import Path
 
-    write_text(report_path, markdown)
-    print(f"[OK] {module_label} 子报告已生成: {report_path}")
+    target_path = Path(target_dir)
+    
+    # 简单的非空检查：如果存在且包含 .git 目录，认为已克隆
+    if target_path.exists() and (target_path / ".git").exists():
+        print(f"[Info] 仓库已存在于 {target_dir}，跳过克隆。")
+        return
+
+    # 构造 Clone URL (优先尝试 HTTPS)
+    # 对于公开仓库，HTTPS 不需要 Token，比较通用
+    repo_url = f"https://github.com/{owner}/{name}.git"
+    
+    print(f"[Info] 正在克隆 {repo_url} 到 {target_dir} ...")
+    
+    try:
+        subprocess.run(
+            ["git", "clone", repo_url, str(target_path)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        print(f"[Success] 克隆完成: {target_dir}")
+    except subprocess.CalledProcessError as e:
+        print(f"[Error] Git Clone 失败: {e.stderr}")
+        raise RuntimeError(f"无法自动克隆仓库 {owner}/{name}") from e
