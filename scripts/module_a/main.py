@@ -88,7 +88,18 @@ def get_scan_targets():
     for p in scan_paths:
         target = root / p
         if target.exists():
-            targets.append(target)
+            # 如果配置的是 temp_repos 根目录，则展开其子目录作为独立仓库
+            if p == "temp_repos" and target.is_dir():
+                found_sub = False
+                for child in target.iterdir():
+                    if child.is_dir() and not child.name.startswith('.'):
+                        targets.append(child)
+                        found_sub = True
+                if not found_sub:
+                    # 如果 temp_repos 为空，还是把 temp_repos 加进去，虽然可能没东西
+                    targets.append(target)
+            else:
+                targets.append(target)
         else:
             print(f"[Warn] 扫描路径不存在: {target}")
     
