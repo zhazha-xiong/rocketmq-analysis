@@ -1,0 +1,47 @@
+# 1. 项目基础信息
+# 用于标识当前分析的目标项目
+project:
+  name: "RocketMQ"
+  repo_owner: "apache"
+  repo_name: "rocketmq"
+  repo_url: "https://github.com/apache/rocketmq.git"
+  default_branch: "develop"  # 分析的主要分支
+  local_path: "."            # 如果分析本地已经存在的仓库，可以在此指定路径（可选）
+
+# 2. 输出路径配置
+# 定义分析结果、数据和文档的存储位置
+output:
+  data_dir: "data"
+  figures_dir: "figures"
+  docs_dir: "docs"
+  report_file: "Analysis_Report.md"
+
+# 3. 模块配置
+
+# 模块A: 代码静态扫描 (Bandit, Lizard)
+module_a:
+  enabled: true
+  scan_paths: ["."]  # 需要扫描的目录列表，相对于项目根目录
+  exclude_paths: ["tests", "venv", ".git"] # 排除的目录
+
+# 模块B: Git 提交历史分析
+module_b:
+  enabled: true
+  # 实际上会使用 project 节点的信息
+  since_date: "2023-01-01" # (可选) 筛选特定日期之后的 commit
+
+# 模块C: GitHub Issue/PR 分析 & 贡献者网络
+module_c:
+  enabled: true
+  # 使用 project 节点的信息 (owner, repo, token等)
+  max_issues: 1000 # 获取 Issue 的最大数量限制
+
+# 模块D: 大模型归纳总结
+module_d:
+  enabled: true
+  llm:
+    provider: "openai" # openai, azure, etc.
+    model: "gpt-4-turbo"
+    # api_base: "" # 如有需要可指定，默认根据 sdk 行为
+    # api_key: "" # 建议通过环境变量 OPENAI_API_KEY 配置，不要写在文件中
+    temperature: 0.2
