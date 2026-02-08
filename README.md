@@ -68,6 +68,55 @@ python -m pip install -U pip
 pip install -r requirements.txt
 ```
 
+## 配置指南
+
+本项目采用 `config.yaml` 进行统一配置，控制分析目标和各模块行为。
+
+**1. 基础配置 (config.yaml)**
+
+文件位于项目根目录，修改此文件即可切换分析目标（无需修改代码）。
+
+```yaml
+project:
+  name: "RocketMQ"           # 项目展示名称
+  repo_owner: "apache"       # GitHub 仓库 Owner
+  repo_name: "rocketmq"      # GitHub 仓库 Name
+
+output:
+  data_dir: "data"           # 数据文件存放目录
+  figures_dir: "figures"     # 图表文件存放目录
+  docs_dir: "docs"           # 报告文件存放目录
+
+module_a:
+  enabled: true
+  scan_paths: "temp_repos"   # 源代码扫描路径
+
+module_b:
+  enabled: true
+  since_date: "2013-03-15"   # Git 历史分析起始日期
+
+module_c:
+  enabled: true
+
+module_d:
+  enabled: true
+  llm:
+    model: "doubao-seed-1-6-251015"                      # 使用的模型名称
+    base_url: "https://ark.cn-beijing.volces.com/api/v3" # AI 厂商的 API Base URL
+```
+
+**2. 敏感信息配置 (.env)**
+
+涉及 Token 和 API Key 的敏感信息，使用 `scripts/.env` 文件管理（参考 `.env.example`）：
+
+```ini
+# GitHub Token (Module B/C 需要)
+GITHUB_TOKEN=your_token_here
+
+# LLM 密钥 (Module D 需要)
+LLM_API_KEY=xxx
+```
+
 ## 单元测试
 
 在项目根目录执行：

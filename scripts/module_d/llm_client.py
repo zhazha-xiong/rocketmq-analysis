@@ -1,17 +1,21 @@
 import openai
 import os
-from utils import get_env, PROJECT_ROOT, setup_logging
+from utils import get_env, PROJECT_ROOT, setup_logging, CONFIG
 
 logger = setup_logging()
 
 def call_llm(content):
     # 1. 获取配置
-    api_key = get_env("LLM_API_KEY")
-    base_url = get_env("LLM_BASE_URL")
-    model = get_env("LLM_MODEL_NAME")
+    api_key = get_env("LLM_API_KEY") or get_env("OPENAI_API_KEY")
+    
+    # 优先从 Config 读取
+    llm_cfg = CONFIG.get('module_d', {}).get('llm', {})
+    
+    base_url = llm_cfg.get('base_url')
+    model = llm_cfg.get('model', "gpt-4-turbo")
 
     if not api_key:
-        logger.error("未找到 LLM_API_KEY，请检查 .env 文件")
+        logger.error("未找到 LLM_API_KEY / OPENAI_API_KEY，请检查 .env 文件")
         return "错误：未配置 API Key，无法生成 AI 洞察。"
 
     # 2. 初始化客户端 (设置超时时间)

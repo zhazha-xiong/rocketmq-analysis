@@ -22,17 +22,38 @@ def ensure_directories():
     data_dir =  Path(CONFIG['paths']['data']) / "module_a"
     figs_dir = Path(CONFIG['paths']['figures']) / "module_a"
     
+    # 尝试自动创建配置的扫描路径（方便用户直接 clone）
+    scan_paths = get_raw_scan_paths()
+    root = Path(CONFIG['paths']['root'])
+    
     dirs = [data_dir, figs_dir]
+    
+    for p in scan_paths:
+        full_path = root / p
+        # 只有当路径看起来像是在项目内的目录时才尝试创建（避免创建奇怪的绝对路径）
+        if not full_path.exists() and not full_path.is_absolute():
+             dirs.append(full_path)
+        elif not full_path.exists() and full_path.is_relative_to(root):
+             dirs.append(full_path)
+
     for d in dirs:
-        os.makedirs(d, exist_ok=True)
-        print(f"目录已就绪: {d}")
+        try:
+            os.makedirs(d, exist_ok=True)
+            print(f"目录已就绪: {d}")
+        except Exception as e:
+            print(f"[Warn] 无法创建目录 {d}: {e}")
+
+def get_raw_scan_paths():
+    raw_paths = CONFIG.get('module_a', {}).get('scan_paths', 'temp_repos')
+    if isinstance(raw_paths, str):
+        return [raw_paths]
+    return list(raw_paths)
 
 def get_scan_targets():
     """获取待扫描的目标路径"""
     # From config: module_a.scan_paths
-    # If paths are relative, they are relative to project root
     root = Path(CONFIG['paths']['root'])
-    scan_paths = CONFIG.get('module_a', {}).get('scan_paths', ['.'])
+    scan_paths = get_raw_scan_paths()
     
     targets = []
     for p in scan_paths:
