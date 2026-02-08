@@ -7,14 +7,17 @@ from dotenv import load_dotenv
 
 
 def repo_root_from(current_file: str) -> str:
+    """获取项目根目录路径"""
     return os.path.abspath(os.path.join(os.path.dirname(current_file), "..", ".."))
 
 
 def file_ready(path: str) -> bool:
+    """检查文件是否存在且大小大于0"""
     return os.path.exists(path) and os.path.getsize(path) > 0
 
 
 def run_step(step_no: int, total_steps: int, title: str, func: Callable[[], Any]) -> bool:
+    """运行流水线的一步，并处理异常"""
     print(f"\n[Step {step_no}/{total_steps}] {title}")
     try:
         func()
@@ -33,6 +36,7 @@ def run_four_step_pipeline(
     visualize_func: Callable[[], Any],
     report_func: Callable[[], Any],
 ) -> bool:
+    """运行标准的四步分析流水线 (Fetch -> Clean -> Visualize -> Report)"""
     total_steps = 4
 
     print("=" * 60)
@@ -61,7 +65,12 @@ def run_four_step_pipeline(
 
 
 def load_github_token(*, missing_hint: str, caller_file: str | None = None) -> str:
-    # 统一支持“公共 .env”：优先模块目录，其次 scripts/.env，再次仓库根目录 .env，最后 cwd/.env
+    """
+    加载 GitHub Token
+    
+    统一支持按照优先级从多个位置查找 .env 文件：
+    优先级：caller_dir > scripts_dir > repo_root > cwd
+    """
     candidates: list[str] = []
 
     if caller_file:
@@ -93,6 +102,7 @@ def load_github_token(*, missing_hint: str, caller_file: str | None = None) -> s
 
 
 def github_headers(token: str) -> dict[str, str]:
+    """生成 GitHub API 请求头"""
     return {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {token}",
@@ -102,24 +112,66 @@ def github_headers(token: str) -> dict[str, str]:
 
 def github_get_json(
     url: str,
-    *,
     headers: dict[str, str],
     params: dict[str, Any] | None = None,
     timeout: int = 30,
 ) -> Any:
-    r = requests.get(url, headers=headers, params=params, timeout=timeout)
-    r.raise_for_status()
-    return r.json()
+    """简单的 GitHub API GET 请求封装"""
+    resp = requests.get(url, headers=headers, params=params, timeout=timeout)
+    resp.raise_for_status()
+    return resp.json()
 
 
-def write_json(path: str, data: Any) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+def write_json(data: Any, path: str, indent: int = 2) -> None:
+    """将数据写入 JSON 文件"""
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, indent=indent, ensure_ascii=False)
 
 
-def write_report(report_path: str, markdown: str, *, module_label: str) -> None:
-    from report_utils import write_text
+def write_report(path: str, content: str, *, module_label: str = "") -> None:
+    """写入 Markdown 报告文件"""
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+    
+    label_info = f"[{module_label}] " if module_label else ""
+    print(f"[Success] {label_info}报告已保存: {path}")
 
-    write_text(report_path, markdown)
-    print(f"[OK] {module_label} 子报告已生成: {report_path}")
+
+def ensure_local_repo(owner: str, name: str, target_dir: str) -> None:
+    """
+    确保指定仓库已克隆到本地 target_dir。
+    如果 target_dir 为空或不存在，则执行 git clone。
+    如果已存在且非空，则跳过（假设已存在）。
+    """
+    import subprocess
+    from pathlib import Path
+
+    target_path = Path(target_dir)
+    
+    # 简单的非空检查：如果存在且包含 .git 目录，认为已克隆
+    if target_path.exists() and (target_path / ".git").exists():
+        print(f"[Info] 仓库已存在于 {target_dir}，跳过克隆。")
+        return
+
+    # 构造 Clone URL (优先尝试 HTTPS)
+    # 对于公开仓库，HTTPS 不需要 Token，比较通用
+    repo_url = f"https://github.com/{owner}/{name}.git"
+    
+    print(f"[Info] 正在克隆 {repo_url} 到 {target_dir} ...")
+    
+    try:
+        subprocess.run(
+            ["git", "clone", repo_url, str(target_path)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        print(f"[Success] 克隆完成: {target_dir}")
+    except subprocess.CalledProcessError as e:
+        print(f"[Error] Git Clone 失败: {e.stderr}")
+        raise RuntimeError(f"无法自动克隆仓库 {owner}/{name}") from e

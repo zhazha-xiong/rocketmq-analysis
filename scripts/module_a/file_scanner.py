@@ -43,8 +43,12 @@ def scan_python_files(repo_paths):
     
     df = pd.DataFrame(files_data)
     print(f"\n总计发现 {len(df)} 个Python文件")
-    print(f"rocketmq-client-python: {len(df[df['repository'] == 'rocketmq-client-python'])} 个")
-    print(f"rocketmq-clients: {len(df[df['repository'] == 'rocketmq-clients'])} 个")
+    if not df.empty:
+        print("按仓库统计:")
+        for repo_name, count in df['repository'].value_counts().items():
+            print(f"{repo_name}: {count} 个")
+    else:
+        print("未发现Python文件")
     
     return df
 

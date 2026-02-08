@@ -85,7 +85,8 @@ def run_modules() -> Dict[str, dict]:
                 duration=0.0,
             )
             continue
-
+        
+        # 使用当前 Python 解释器运行模块入口脚本
         try:
             proc = subprocess.run(
                 [sys.executable, str(entry)],
@@ -154,11 +155,6 @@ def _print_summary(name: str, result: dict):
     print(f"  - report_exists  : {result['report_exists']}")
     print(f"  - figures_count  : {result['figures_count']}")
     print(f"  - duration (sec) : {result['duration_sec']}")
-
-
-# =========================
-# CLI 调试入口（可选）
-# =========================
 
 if __name__ == "__main__":
     run_modules()

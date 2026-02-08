@@ -25,6 +25,7 @@ except ImportError as e:
 CONFIG = load_config()
 
 def run_pipeline():
+    """运行 Module B 的完整分析流水线（数据抓取 -> 清洗 -> 可视化 -> 报告）"""
     data_dir = Path(CONFIG['paths']['data']) / "module_b"
     figs_dir = Path(CONFIG['paths']['figures']) / "module_b"
     os.makedirs(data_dir, exist_ok=True)

@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
-# Add scripts directory to path
+# 增加 scripts 目录到环境变量
 sys.path.append(str(Path(__file__).parent.parent))
 from config_utils import load_config
 from module_utils import github_get_json, github_headers, load_github_token, repo_root_from
@@ -12,15 +12,16 @@ from module_utils import github_get_json, github_headers, load_github_token, rep
 CONFIG = load_config()
 
 def main() -> None:
+    """运行 Module B 的数据抓取流程"""
     token = load_github_token(missing_hint="请在scripts/.env填写GITHUB_TOKEN", caller_file=__file__)
 
     project = CONFIG.get('project', {})
     owner = project.get('repo_owner', 'apache')
     repo = project.get('repo_name', 'rocketmq')
     
-    # Optional since from config
+    # 获取配置中的其实时间
     since = CONFIG.get('module_b', {}).get('since_date', "2013-01-01") + "T00:00:00Z"
-    if len(since) > 20: # simple check if user provided time
+    if len(since) > 20: # 简单检查用户是否提供了完整时间
          # If config has T... keep it, else append
          pass 
 

@@ -114,5 +114,5 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n[Module D] Interrupted by user.")
+        print("\n[Module D] 用户中断。")
         sys.exit(130)
