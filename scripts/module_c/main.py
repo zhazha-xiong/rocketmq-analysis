@@ -9,6 +9,10 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 try:
+    from pathlib import Path
+    sys.path.append(str(Path(__file__).parent.parent))
+    from config_utils import load_config
+    
     import get_git_data
     import clean_git_data
     import visualizer
@@ -17,16 +21,20 @@ try:
 except ImportError as e:
     print(f"[Error] 模块导入失败: {e}")
     sys.exit(1)
+
+CONFIG = load_config()
+
 def run_pipeline() -> bool:
-    repo_root = repo_root_from(__file__)
-    os.makedirs(os.path.join(repo_root, "data", "module_c"), exist_ok=True)
-    os.makedirs(os.path.join(repo_root, "figures", "module_c"), exist_ok=True)
-    data_dir = os.path.join(repo_root, "data", "module_c")
-    commits_file = os.path.join(data_dir, "commits.json")
+    data_dir = Path(CONFIG['paths']['data']) / "module_c"
+    figs_dir = Path(CONFIG['paths']['figures']) / "module_c"
+    os.makedirs(data_dir, exist_ok=True)
+    os.makedirs(figs_dir, exist_ok=True)
+    
+    commits_file = data_dir / "commits.json"
 
     return run_four_step_pipeline(
         module_label="Module C",
-        data_path_to_skip_fetch=commits_file,
+        data_path_to_skip_fetch=str(commits_file),
         fetch_func=get_git_data.main,
         clean_func=clean_git_data.main,
         visualize_func=visualizer.main,

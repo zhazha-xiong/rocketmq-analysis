@@ -1,11 +1,18 @@
 import os
-
+import sys
+from pathlib import Path
 import pandas as pd
 
+# Add scripts directory to path
+sys.path.append(str(Path(__file__).parent.parent))
+from config_utils import load_config
+
+CONFIG = load_config()
 
 def clean_commits_csv(csv_path: str, clean_csv_path: str) -> None:
     if not os.path.exists(csv_path):
         raise RuntimeError("请先运行scripts/module_b/get_git_data.py获取数据")
+
 
     cols = ["authored_utc", "author_name", "subject"]
     df = pd.read_csv(csv_path, usecols=cols)
@@ -19,11 +26,11 @@ def clean_commits_csv(csv_path: str, clean_csv_path: str) -> None:
 
 
 def main() -> None:
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    csv_path = os.path.join(repo_root, "data", "module_b", "commits.csv")
-    clean_csv_path = os.path.join(repo_root, "data", "module_b", "clean_commits.csv")
+    data_dir = Path(CONFIG['paths']['data']) / "module_b"
+    csv_path = data_dir / "commits.csv"
+    clean_csv_path = data_dir / "clean_commits.csv"
 
-    clean_commits_csv(csv_path, clean_csv_path)
+    clean_commits_csv(str(csv_path), str(clean_csv_path))
     print(f"[OK] 已清洗数据并保存至: {clean_csv_path}")
 
 if __name__ == "__main__":

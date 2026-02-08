@@ -125,21 +125,29 @@ def plot_breakdown(data, save_path):
     plt.close()
     print(f"[OK] 细分指标图已保存: {save_path}")
 
+import os
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+from config_utils import load_config
+
+CONFIG = load_config()
+
 def main():
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-
-    repo_root = os.path.dirname(os.path.dirname(current_dir))
+    data_dir = Path(CONFIG['paths']['data']) / "module_c"
+    figs_dir = Path(CONFIG['paths']['figures']) / "module_c"
     
-    data_path = os.path.join(repo_root, "data", "module_c", "clean_scores.json")
-    fig_dir = os.path.join(repo_root, "figures", "module_c")
+    data_path = data_dir / "clean_scores.json"
+    fig_dir = str(figs_dir)
+    os.makedirs(fig_dir, exist_ok=True)
     
     print(f"数据路径: {data_path}")
     print(f"输出目录: {fig_dir}")
     
     setup_style()
     try:
-        data = load_data(data_path)
+        data = load_data(str(data_path))
         plot_radar(data, os.path.join(fig_dir, "radar_chart.png"))
         plot_breakdown(data, os.path.join(fig_dir, "breakdown_chart.png"))
     except Exception as e:

@@ -1,0 +1,25 @@
+project:
+  name: "RocketMQ"
+  repo_owner: "apache"
+  repo_name: "rocketmq"
+
+output:
+  data_dir: "data"
+  figures_dir: "figures"
+  docs_dir: "docs" 
+
+module_a:
+  enabled: true
+  scan_paths: "temp_repos"
+module_b:
+  enabled: true
+  since_date: "2013-03-15"
+
+module_c:
+  enabled: true
+
+module_d:
+  enabled: true
+  llm:
+    model: "doubao-seed-1-6-251015"
+    base_url: "https://ark.cn-beijing.volces.com/api/v3"

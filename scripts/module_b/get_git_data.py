@@ -1,17 +1,29 @@
 import os
 import csv
-
+import sys
+from pathlib import Path
 from datetime import datetime, timezone
 
+# Add scripts directory to path
+sys.path.append(str(Path(__file__).parent.parent))
+from config_utils import load_config
 from module_utils import github_get_json, github_headers, load_github_token, repo_root_from
 
+CONFIG = load_config()
 
 def main() -> None:
     token = load_github_token(missing_hint="请在scripts/.env填写GITHUB_TOKEN", caller_file=__file__)
 
-    owner, repo = "apache", "rocketmq"
-    since = "2013-03-15T00:00:00Z"
+    project = CONFIG.get('project', {})
+    owner = project.get('repo_owner', 'apache')
+    repo = project.get('repo_name', 'rocketmq')
     
+    # Optional since from config
+    since = CONFIG.get('module_b', {}).get('since_date', "2013-01-01") + "T00:00:00Z"
+    if len(since) > 20: # simple check if user provided time
+         # If config has T... keep it, else append
+         pass 
+
     until = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     headers = github_headers(token)
@@ -19,10 +31,11 @@ def main() -> None:
     page = 1
     total = 0
 
-    repo_root = repo_root_from(__file__)
-    out_path = os.path.join(repo_root, "data", "module_b", "commits.csv")
+    data_dir = Path(CONFIG['paths']['data']) / "module_b"
+    out_path = data_dir / "commits.csv"
+    os.makedirs(data_dir, exist_ok=True)
 
-    print("===开始采集数据===")
+    print(f"===开始采集数据 [{owner}/{repo}]===")
 
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
