@@ -49,23 +49,29 @@ def ensure_directories():
     # 如果用户配置了绝对路径，我们默认那是用户自己管理的目录，不动它
     config_scan_paths = get_raw_scan_paths()
     if len(config_scan_paths) == 1 and config_scan_paths[0] == "temp_repos":
-        repo_owner = CONFIG.get('project', {}).get('repo_owner', 'apache')
-        repo_name = CONFIG.get('project', {}).get('repo_name', 'rocketmq')
+        # 优先读取 module_a.repositories 配置
+        # 这种设计允许 Module A 扫描多个仓库，而 Module B/C 依然关注 project.repo_name 主仓库
+        repos = CONFIG.get('module_a', {}).get('repositories', [])
         
-        # 目标路径: root / temp_repos / repo_name
-        # 为什么是 repo_name? 因为 git clone temp_repos 会把内容 clone 进去
-        # 但通常我们希望保持 temp_repos 作为容器，里面放 repo_name
-        # 让我们查看 get_scan_targets 是怎么处理的
+        # 如果没有配置 specific 的 repositories，则回退到 project 配置（单仓库模式）
+        if not repos:
+             repos = [{
+                 'owner': CONFIG.get('project', {}).get('repo_owner', 'apache'),
+                 'name': CONFIG.get('project', {}).get('repo_name', 'rocketmq')
+             }]
         
-        # 修正：git clone URL temp_repos/repo_name
-        # 这样 structure 就是 temp_repos/rocketmq
-        
-        target_clone_dir = root / "temp_repos" / repo_name
-        try:
-            ensure_local_repo(repo_owner, repo_name, str(target_clone_dir))
-        except Exception as e:
-            print(f"[Warn] 自动克隆失败: {e}")
-            print("请检查网络连接或手动克隆仓库。")
+        for repo_info in repos:
+            r_owner = repo_info.get('owner')
+            r_name = repo_info.get('name')
+            if not r_owner or not r_name:
+                continue
+
+            target_clone_dir = root / "temp_repos" / r_name
+            try:
+                ensure_local_repo(r_owner, r_name, str(target_clone_dir))
+            except Exception as e:
+                print(f"[Warn] 自动克隆失败 [{r_name}]: {e}")
+                print("请检查网络连接或手动克隆仓库。")
 
 def get_raw_scan_paths():
     raw_paths = CONFIG.get('module_a', {}).get('scan_paths', 'temp_repos')
