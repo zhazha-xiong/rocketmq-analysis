@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Import config_utils
+# 导入 config_utils
 sys.path.append(str(Path(__file__).parent.parent))
 from config_utils import load_config
 
@@ -16,7 +16,7 @@ try:
     FIGURES_DIR = Path(CONFIG['paths']['figures'])
     OUTPUT_DIR = Path(CONFIG['paths']['docs'])
 except Exception as e:
-    # Fallback or error
+    # 回退或报错
     print(f"Warning: Module D loading config failed: {e}")
     PROJECT_ROOT = Path(__file__).parent.parent.parent
     DATA_DIR = PROJECT_ROOT / "data"
@@ -24,9 +24,11 @@ except Exception as e:
     OUTPUT_DIR = PROJECT_ROOT / "docs"
 
 def setup_logging():
+    """配置并返回日志记录器"""
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     return logging.getLogger("ModuleD")
 
 def get_env(key, default=None):
+    """从 .env 文件加载环境变量"""
     load_dotenv(PROJECT_ROOT / "scripts" / ".env")
     return os.getenv(key, default)

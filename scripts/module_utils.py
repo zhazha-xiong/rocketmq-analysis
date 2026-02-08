@@ -7,14 +7,17 @@ from dotenv import load_dotenv
 
 
 def repo_root_from(current_file: str) -> str:
+    """获取项目根目录路径"""
     return os.path.abspath(os.path.join(os.path.dirname(current_file), "..", ".."))
 
 
 def file_ready(path: str) -> bool:
+    """检查文件是否存在且大小大于0"""
     return os.path.exists(path) and os.path.getsize(path) > 0
 
 
 def run_step(step_no: int, total_steps: int, title: str, func: Callable[[], Any]) -> bool:
+    """运行流水线的一步，并处理异常"""
     print(f"\n[Step {step_no}/{total_steps}] {title}")
     try:
         func()
@@ -33,6 +36,7 @@ def run_four_step_pipeline(
     visualize_func: Callable[[], Any],
     report_func: Callable[[], Any],
 ) -> bool:
+    """运行标准的四步分析流水线 (Fetch -> Clean -> Visualize -> Report)"""
     total_steps = 4
 
     print("=" * 60)
@@ -61,7 +65,12 @@ def run_four_step_pipeline(
 
 
 def load_github_token(*, missing_hint: str, caller_file: str | None = None) -> str:
-    # 统一支持“公共 .env”：优先模块目录，其次 scripts/.env，再次仓库根目录 .env，最后 cwd/.env
+    """
+    加载 GitHub Token
+    
+    统一支持按照优先级从多个位置查找 .env 文件：
+    优先级：caller_dir > scripts_dir > repo_root > cwd
+    """
     candidates: list[str] = []
 
     if caller_file:
@@ -93,6 +102,7 @@ def load_github_token(*, missing_hint: str, caller_file: str | None = None) -> s
 
 
 def github_headers(token: str) -> dict[str, str]:
+    """生成 GitHub API 请求头"""
     return {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {token}",
@@ -113,6 +123,7 @@ def github_get_json(
 
 
 def write_json(data: Any, path: str, indent: int = 2) -> None:
+    """将数据写入 JSON 文件"""
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=indent, ensure_ascii=False)
 

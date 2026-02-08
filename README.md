@@ -78,22 +78,31 @@ pip install -r requirements.txt
 
 ```yaml
 project:
-  name: "RocketMQ"           # 项目展示名称
-  repo_owner: "apache"       # GitHub 仓库 Owner
-  repo_name: "rocketmq"      # GitHub 仓库 Name
+  name: "RocketMQ"
+  # 核心仓库：用于 Module B (提交历史) 和 Module C (规范性) 的深度 API 分析
+  repo_owner: "apache"
+  repo_name: "rocketmq"
 
 output:
-  data_dir: "data"           # 数据文件存放目录
-  figures_dir: "figures"     # 图表文件存放目录
-  docs_dir: "docs"           # 报告文件存放目录
+  data_dir: "data"
+  figures_dir: "figures"
+  docs_dir: "docs" 
 
 module_a:
   enabled: true
-  scan_paths: "temp_repos"   # 源代码扫描路径
+  scan_paths: "temp_repos"
+  # 待扫描仓库列表：仅用于 Module A (静态分析)，会自动克隆到 temp_repos/ 下
+  repositories:
+    - owner: "apache"
+      name: "rocketmq"
+    - owner: "apache"
+      name: "rocketmq-client-python"
+    - owner: "apache"
+      name: "rocketmq-dashboard"
 
 module_b:
   enabled: true
-  since_date: "2013-03-15"   # Git 历史分析起始日期
+  since_date: "2013-03-15"
 
 module_c:
   enabled: true
@@ -101,8 +110,9 @@ module_c:
 module_d:
   enabled: true
   llm:
-    model: "doubao-seed-1-6-251015"                      # 使用的模型名称
-    base_url: "https://ark.cn-beijing.volces.com/api/v3" # AI 厂商的 API Base URL
+    model: "doubao-seed-1-6-251015"
+    base_url: "https://ark.cn-beijing.volces.com/api/v3"
+
 ```
 
 **2. 敏感信息配置 (.env)**

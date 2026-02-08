@@ -3,7 +3,7 @@ import sys
 import argparse
 from pathlib import Path
 
-# Add scripts directory to path to import config_utils
+# 将 scripts 目录添加到路径以导入 config_utils
 sys.path.append(str(Path(__file__).parent.parent))
 from config_utils import load_config
 from module_utils import ensure_local_repo
@@ -14,12 +14,12 @@ import lizard_scanner
 import visualizer
 import report_generator
 
-# Load configuration
+# 加载配置
 CONFIG = load_config()
 
 def ensure_directories():
     """确保所需目录存在"""
-    # Use paths from config
+    # 使用配置中的路径
     data_dir =  Path(CONFIG['paths']['data']) / "module_a"
     figs_dir = Path(CONFIG['paths']['figures']) / "module_a"
     
@@ -44,16 +44,14 @@ def ensure_directories():
         except Exception as e:
             print(f"[Warn] 无法创建目录 {d}: {e}")
 
-    # ===== 新增：自动克隆逻辑 =====
-    # 只有当 scan_paths 指向项目内的 "temp_repos" 时才尝试克隆
-    # 如果用户配置了绝对路径，我们默认那是用户自己管理的目录，不动它
+    # 自动克隆逻辑：当配置为 "temp_repos" 时，尝试自动拉取代码
     config_scan_paths = get_raw_scan_paths()
     if len(config_scan_paths) == 1 and config_scan_paths[0] == "temp_repos":
         # 优先读取 module_a.repositories 配置
         # 这种设计允许 Module A 扫描多个仓库，而 Module B/C 依然关注 project.repo_name 主仓库
         repos = CONFIG.get('module_a', {}).get('repositories', [])
         
-        # 如果没有配置 specific 的 repositories，则回退到 project 配置（单仓库模式）
+        # 若未配置 repositories，则回退到项目主配置（单仓库模式）
         if not repos:
              repos = [{
                  'owner': CONFIG.get('project', {}).get('repo_owner', 'apache'),
@@ -74,6 +72,7 @@ def ensure_directories():
                 print("请检查网络连接或手动克隆仓库。")
 
 def get_raw_scan_paths():
+    """获取原始扫描路径配置（字符串或列表）并统一为列表返回"""
     raw_paths = CONFIG.get('module_a', {}).get('scan_paths', 'temp_repos')
     if isinstance(raw_paths, str):
         return [raw_paths]
@@ -81,7 +80,7 @@ def get_raw_scan_paths():
 
 def get_scan_targets():
     """获取待扫描的目标路径"""
-    # From config: module_a.scan_paths
+    # 从配置获取: module_a.scan_paths
     root = Path(CONFIG['paths']['root'])
     scan_paths = get_raw_scan_paths()
     

@@ -18,10 +18,9 @@ sns.set_style("whitegrid")
 sns.set_palette("husl")
 
 def plot_bandit_severity(df_bandit, output_dir):
-    """Plot Bandit issue severity distribution"""
+    """绘制 Bandit 问题严重程度分布"""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
     
-    # Severity distribution
     severity_counts = df_bandit['severity'].value_counts()
     ax1.pie(severity_counts.values, labels=severity_counts.index, autopct='%1.1f%%', startangle=90)
     ax1.set_title('Security Issue Severity Distribution', fontsize=14, fontweight='bold')
@@ -36,7 +35,7 @@ def plot_bandit_severity(df_bandit, output_dir):
     plt.close()
 
 def plot_bandit_issues(df_bandit, output_dir):
-    """Plot Bandit issue types Top 10"""
+    """绘制 Top 10 Bandit 问题类型"""
     fig, ax = plt.subplots(figsize=(12, 8))
     
     issue_counts = df_bandit['issue_name'].value_counts().head(10)
@@ -56,7 +55,7 @@ def plot_bandit_issues(df_bandit, output_dir):
     plt.close()
 
 def plot_complexity_distribution(df_lizard, output_dir):
-    """Plot code complexity distribution"""
+    """绘制代码复杂度分布"""
     fig, axes = plt.subplots(2, 2, figsize=(14, 12))
     
     sns.boxplot(data=df_lizard, y='ccn', ax=axes[0, 0])

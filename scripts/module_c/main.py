@@ -25,6 +25,7 @@ except ImportError as e:
 CONFIG = load_config()
 
 def run_pipeline() -> bool:
+    """运行 Module C 的完整分析流水线（规范性检查）"""
     data_dir = Path(CONFIG['paths']['data']) / "module_c"
     figs_dir = Path(CONFIG['paths']['figures']) / "module_c"
     os.makedirs(data_dir, exist_ok=True)
