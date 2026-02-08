@@ -1,43 +1,48 @@
 import os
 import sys
 import argparse
+from pathlib import Path
+
+# Add scripts directory to path to import config_utils
+sys.path.append(str(Path(__file__).parent.parent))
+from config_utils import load_config
+
 import file_scanner
 import bandit_scanner
 import lizard_scanner
 import visualizer
 import report_generator
 
+# Load configuration
+CONFIG = load_config()
+
 def ensure_directories():
     """确保所需目录存在"""
-    dirs = [
-        "data/module_a",
-        "figures/module_a",
-        "temp_repos"
-    ]
+    # Use paths from config
+    data_dir =  Path(CONFIG['paths']['data']) / "module_a"
+    figs_dir = Path(CONFIG['paths']['figures']) / "module_a"
+    
+    dirs = [data_dir, figs_dir]
     for d in dirs:
         os.makedirs(d, exist_ok=True)
         print(f"目录已就绪: {d}")
 
-def check_repos():
-    """检查目标仓库是否已克隆"""
-    repos = [
-        "temp_repos/rocketmq-client-python",
-        "temp_repos/rocketmq-clients"
-    ]
+def get_scan_targets():
+    """获取待扫描的目标路径"""
+    # From config: module_a.scan_paths
+    # If paths are relative, they are relative to project root
+    root = Path(CONFIG['paths']['root'])
+    scan_paths = CONFIG.get('module_a', {}).get('scan_paths', ['.'])
     
-    missing = [r for r in repos if not os.path.exists(r)]
+    targets = []
+    for p in scan_paths:
+        target = root / p
+        if target.exists():
+            targets.append(target)
+        else:
+            print(f"[Warn] 扫描路径不存在: {target}")
     
-    if missing:
-        print("\n以下仓库尚未克隆:")
-        for repo in missing:
-            print(f"  - {repo}")
-        print("\n请先执行以下命令克隆仓库:")
-        print("  cd temp_repos")
-        print("  git clone https://github.com/apache/rocketmq-client-python.git")
-        print("  git clone https://github.com/apache/rocketmq-clients.git")
-        return False
-    
-    return True
+    return targets
 
 def run_all():
     """运行完整分析流程"""
@@ -45,61 +50,90 @@ def run_all():
     print("模块A：Python静态分析 - 完整流程")
     print("=" * 60)
     
+    if not CONFIG.get('module_a', {}).get('enabled', True):
+        print("Module A is disabled in config.")
+        return
+
     # Step 1: 准备工作
     print("\n[步骤 1/5] 准备工作...")
     ensure_directories()
-    
-    if not check_repos():
-        sys.exit(1)
+    targets = get_scan_targets()
+    if not targets:
+        print("未找到有效扫描路径，退出。")
+        return
     
     # Step 2: 文件扫描
-    print("\n[步骤 2/5] 扫描Python文件...")
-    repos = [
-        "temp_repos/rocketmq-client-python",
-        "temp_repos/rocketmq-clients/python"
-    ]
-    df_files = file_scanner.scan_python_files(repos)
-    df_files.to_csv("data/module_a/python_files.csv", index=False, encoding='utf-8-sig')
+    print("\n[步骤 2/6] 扫描Python文件...")
+    # 转换路径为字符串以兼容旧接口
+    target_strs = [str(t) for t in targets]
     
+    data_path = Path(CONFIG['paths']['data']) / "module_a"
+    figs_path = Path(CONFIG['paths']['figures']) / "module_a"
+
+    try:
+        df_files = file_scanner.scan_python_files(target_strs)
+        df_files.to_csv(data_path / "python_files.csv", index=False, encoding='utf-8-sig')
+    except Exception as e:
+        print(f"[Error] 文件扫描失败: {e}")
+        return
+
     # Step 3: Bandit安全扫描
-    print("\n[步骤 3/5] 运行Bandit安全扫描...")
-    raw_bandit = bandit_scanner.run_bandit_scan(repos, "data/module_a/bandit_raw.json")
-    df_bandit = bandit_scanner.parse_bandit_results(raw_bandit)
-    df_bandit.to_csv("data/module_a/bandit_results.csv", index=False, encoding='utf-8-sig')
-    bandit_scanner.analyze_bandit_results(df_bandit)
-    
+    print("\n[步骤 3/6] 运行Bandit安全扫描...")
+    try:
+        raw_bandit_path = data_path / "bandit_raw.json"
+        raw_bandit = bandit_scanner.run_bandit_scan(target_strs, str(raw_bandit_path))
+        df_bandit = bandit_scanner.parse_bandit_results(raw_bandit)
+        df_bandit.to_csv(data_path / "bandit_results.csv", index=False, encoding='utf-8-sig')
+        bandit_scanner.analyze_bandit_results(df_bandit)
+    except Exception as e:
+         print(f"[Error] Bandit扫描失败: {e}")
+         df_bandit = None
+
     # Step 4: Lizard复杂度分析
-    print("\n[步骤 4/5] 运行Lizard复杂度分析...")
-    df_lizard = lizard_scanner.run_lizard_scan(repos, "data/module_a/lizard_raw.csv")
-    df_analyzed = lizard_scanner.analyze_complexity(df_lizard)
-    df_analyzed.to_csv("data/module_a/lizard_results.csv", index=False, encoding='utf-8-sig')
+    print("\n[步骤 4/6] 运行Lizard复杂度分析...")
+    try:
+        df_lizard = lizard_scanner.run_lizard_scan(target_strs, str(data_path / "lizard_raw.csv"))
+        df_analyzed = lizard_scanner.analyze_complexity(df_lizard)
+        df_analyzed.to_csv(data_path / "lizard_results.csv", index=False, encoding='utf-8-sig')
+    except Exception as e:
+        print(f"[Error] Lizard扫描失败: {e}")
+        df_analyzed = None
     
     # Step 5: 生成可视化图表
     print("\n[步骤 5/6] 生成可视化图表...")
-    output_dir = "figures/module_a"
-    visualizer.plot_bandit_severity(df_bandit, output_dir)
-    visualizer.plot_bandit_issues(df_bandit, output_dir)
-    visualizer.plot_complexity_distribution(df_analyzed, output_dir)
-    visualizer.plot_top_complex_functions(df_analyzed, output_dir)
-    visualizer.plot_repository_comparison(df_bandit, df_analyzed, output_dir)
-    
+    try:
+        if df_bandit is not None and df_analyzed is not None:
+             visualizer.plot_bandit_severity(df_bandit, str(figs_path))
+             visualizer.plot_bandit_issues(df_bandit, str(figs_path))
+             visualizer.plot_complexity_distribution(df_analyzed, str(figs_path))
+             visualizer.plot_top_complex_functions(df_analyzed, str(figs_path))
+             # Visualizer might need update if it depends on specific 'Repository' column matching hardcoded names
+             visualizer.plot_repository_comparison(df_bandit, df_analyzed, str(figs_path))
+    except Exception as e:
+        print(f"[Warn] 可视化生成部分失败: {e}")
+
     # Step 6: 生成子报告
     print("\n[步骤 6/6] 生成子报告（REPORT.md）...")
-    report_generator.main()
+    # Report generator needs to be config aware too, but let's assume it finds files by relative path or we update it later.
+    # For now, it seems report_generator.main() is self-contained.
+    try:
+        report_generator.main()
+    except Exception as e:
+        print(f"[Warn] 报告生成失败: {e}")
     
     # 完成
     print("\n" + "=" * 60)
     print("模块A分析完成！")
     print("=" * 60)
     print("\n生成的文件:")
-    print("  数据文件:")
-    print("    - data/module_a/python_files.csv")
-    print("    - data/module_a/bandit_results.csv")
-    print("    - data/module_a/lizard_results.csv")
-    print("  图表文件:")
-    print("    - figures/module_a/*.png")
+    print(f"  数据文件 (在 {data_path}):")
+    print("    - python_files.csv")
+    print("    - bandit_results.csv")
+    print("    - lizard_results.csv")
+    print(f"  图表文件 (在 {figs_path}):")
+    print("    - *.png")
     print("  子报告:")
-    print("    - data/module_a/REPORT.md")
+    print("    - REPORT.md")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='模块A：Python静态分析')

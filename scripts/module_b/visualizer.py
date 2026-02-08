@@ -1,11 +1,18 @@
 import os
+import sys
+from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from chinese_calendar import is_workday
 from matplotlib.patches import Patch
-
 import matplotlib.dates as mdates
+
+# Add scripts directory to path
+sys.path.append(str(Path(__file__).parent.parent))
+from config_utils import load_config
+
+CONFIG = load_config()
 
 def setup_style():
     """配置绘图风格和中文字体"""
@@ -200,12 +207,14 @@ def plot_daily_trend(df, output_dir):
 def main():
     setup_style()
     
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    csv_path = os.path.join(repo_root, "data", "module_b", "clean_commits.csv")
-    output_dir = os.path.join(repo_root, "figures", "module_b")
+    data_dir = Path(CONFIG['paths']['data']) / "module_b"
+    figs_dir = Path(CONFIG['paths']['figures']) / "module_b"
+    csv_path = data_dir / "clean_commits.csv"
+    output_dir = str(figs_dir)
+    os.makedirs(output_dir, exist_ok=True)
     
     try:
-        df = load_and_process_data(csv_path)
+        df = load_and_process_data(str(csv_path))
         
         plot_holiday_overtime_pie(df, output_dir)
         plot_workday_overtime_pie(df, output_dir)

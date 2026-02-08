@@ -1,6 +1,11 @@
 import os
 import json
+import sys
+from pathlib import Path
 
+# Add scripts directory to path
+sys.path.append(str(Path(__file__).parent.parent))
+from config_utils import load_config
 from module_utils import (
     github_get_json,
     github_headers,
@@ -9,18 +14,22 @@ from module_utils import (
     write_json,
 )
 
+CONFIG = load_config()
 
 def main() -> None:
     token = load_github_token(missing_hint="请在scripts/.env填写GITHUB_TOKEN", caller_file=__file__)
 
-    owner, repo = "apache", "rocketmq"
+    project = CONFIG.get('project', {})
+    owner = project.get('repo_owner', 'apache')
+    repo = project.get('repo_name', 'rocketmq')
     
     headers = github_headers(token)
     
-    repo_root = repo_root_from(__file__)
-    out_dir = os.path.join(repo_root, "data", "module_c")
+    data_dir = Path(CONFIG['paths']['data']) / "module_c"
+    out_dir = str(data_dir)
+    os.makedirs(out_dir, exist_ok=True)
 
-    print("===开始采集数据===")
+    print(f"===开始采集数据 [{owner}/{repo}]===")
 
     # 1. Repo Info
     url_repo = f"https://api.github.com/repos/{owner}/{repo}"
